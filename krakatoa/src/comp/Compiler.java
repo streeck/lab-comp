@@ -28,14 +28,13 @@ public class Compiler {
 		// Program ::= KraClass { KraClass }
 		ArrayList<MetaobjectCall> metaobjectCallList = new ArrayList<>();
 		ArrayList<KraClass> kraClassList = new ArrayList<>();
-		Program program = new Program(kraClassList, metaobjectCallList, compilationErrorList);
 		try {
 			while ( lexer.token == Symbol.MOCall ) {
 				metaobjectCallList.add(metaobjectCall());
 			}
-			classDec();
+			kraClassList.add(classDec());
 			while ( lexer.token == Symbol.CLASS )
-				classDec();
+				kraClassList.add(classDec());
 			if ( lexer.token != Symbol.EOF ) {
 				signalError.showError("End of file expected");
 			}
@@ -43,6 +42,7 @@ public class Compiler {
 		catch( RuntimeException e) {
 			// if there was an exception, there is a compilation signalError
 		}
+		Program program = new Program(kraClassList, metaobjectCallList, compilationErrorList);
 		return program;
 	}
 
@@ -106,11 +106,11 @@ public class Compiler {
 		return new MetaobjectCall(name, metaobjectParamList);
 	}
 
-	private void classDec() {
-		// Note que os métodos desta classe não correspondem exatamente às
+	private KraClass classDec() {
+		// Note que os metodos desta classe nao correspondem exatamente as
 		// regras
-		// da gramática. Este método classDec, por exemplo, implementa
-		// a produção KraClass (veja abaixo) e partes de outras produções.
+		// da gramatica. Este metodo classDec, por exemplo, implementa
+		// a producao KraClass (veja abaixo) e partes de outras producoes.
 
 		/*
 		 * KraClass ::= ``class'' Id [ ``extends'' Id ] "{" MemberList "}"
@@ -120,12 +120,19 @@ public class Compiler {
 		 * MethodDec ::= Qualifier Type Id "("[ FormalParamDec ] ")" "{" StatementList "}" 
 		 * Qualifier ::= [ "static" ]  ( "private" | "public" )
 		 */
+		KraClass kraClass, superClass;
+        InstanceVariableList variableList = new InstanceVariableList();
+        MethodList methodList = new MethodList();
+        Boolean publicQualifier = false; //Indica se o qualifier Ã© publico ou privado
+
 		if ( lexer.token != Symbol.CLASS ) signalError.showError("'class' expected");
 		lexer.nextToken();
 		if ( lexer.token != Symbol.IDENT )
 			signalError.show(ErrorSignaller.ident_expected);
 		String className = lexer.getStringValue();
-		symbolTable.putInGlobal(className, new KraClass(className));
+        kraClass = new KraClass(className);
+		symbolTable.putInGlobal(className, kraClass);
+
 		lexer.nextToken();
 		if ( lexer.token == Symbol.EXTENDS ) {
 			lexer.nextToken();
@@ -133,7 +140,12 @@ public class Compiler {
 				signalError.show(ErrorSignaller.ident_expected);
 			String superclassName = lexer.getStringValue();
 
-			lexer.nextToken();
+            //Verifica se a superclasse jÃ¡ foi declarada previamente.
+            superClass = symbolTable.getInGlobal(superclassName);
+            if(superClass == null) signalError.showError("Super Class expected");
+            else kraClass.setSuperclass(superClass);
+
+            lexer.nextToken();
 		}
 		if ( lexer.token != Symbol.LEFTCURBRACKET )
 			signalError.showError("{ expected", true);
@@ -146,14 +158,17 @@ public class Compiler {
 			case PRIVATE:
 				lexer.nextToken();
 				qualifier = Symbol.PRIVATE;
+                publicQualifier = false;
 				break;
 			case PUBLIC:
 				lexer.nextToken();
 				qualifier = Symbol.PUBLIC;
+                publicQualifier = true;
 				break;
 			default:
 				signalError.showError("private, or public expected");
 				qualifier = Symbol.PUBLIC;
+                publicQualifier = true;
 			}
 			Type t = type();
 			if ( lexer.token != Symbol.IDENT )
@@ -161,39 +176,56 @@ public class Compiler {
 			String name = lexer.getStringValue();
 			lexer.nextToken();
 			if ( lexer.token == Symbol.LEFTPAR )
-				methodDec(t, name, qualifier);
+				methodList = methodDec(t, name, qualifier);
 			else if ( qualifier != Symbol.PRIVATE )
 				signalError.showError("Attempt to declare a public instance variable");
 			else
-				instanceVarDec(t, name);
+                variableList = instanceVarDec(t, name);
 		}
 		if ( lexer.token != Symbol.RIGHTCURBRACKET )
 			signalError.showError("public/private or \"}\" expected");
-		lexer.nextToken();
 
+        kraClass.setInstanceVariableList(variableList);
+        //Dar set nos mÃ©todos publicos ou privados com base no qualifier
+        if(publicQualifier) kraClass.setPublicMethodList(methodList);
+        else kraClass.setPrivateMethodLis(methodList);
+
+		lexer.nextToken();
+	return kraClass;
 	}
 
-	private void instanceVarDec(Type type, String name) {
+	private InstanceVariableList instanceVarDec(Type type, String name) {
 		// InstVarDec ::= [ "static" ] "private" Type IdList ";"
+        InstanceVariableList variableList = new InstanceVariableList();
+		InstanceVariable v = null;
 
-		while (lexer.token == Symbol.COMMA) {
+        //Add a variavel na lista de variaveis de instancia
+        variableList.addElement( new InstanceVariable(name,type));
+
+        while (lexer.token == Symbol.COMMA) {
 			lexer.nextToken();
 			if ( lexer.token != Symbol.IDENT )
 				signalError.showError("Identifier expected");
 			String variableName = lexer.getStringValue();
+            //TO DO::
+            //A intencao Ã© ver se ela jÃ¡ vou colocada na tabela de atributos
+            //Se nÃ£o tiver sido, add nessa tabela. Mas nÃ£o sei se esse de atributos deveria ser o global
+            //Add a variavel na lista
+            variableList.addElement( new InstanceVariable(variableName,type));
 			lexer.nextToken();
 		}
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
+        return variableList;
 	}
 
-	private void methodDec(Type type, String name, Symbol qualifier) {
+	private MethodList methodDec(Type type, String name, Symbol qualifier) {
 		/*
 		 * MethodDec ::= Qualifier Return Id "("[ FormalParamDec ] ")" "{"
 		 *                StatementList "}"
 		 */
-
+        MethodList methodList = null;
 		lexer.nextToken();
 		if ( lexer.token != Symbol.RIGHTPAR ) formalParamDec();
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
@@ -206,7 +238,7 @@ public class Compiler {
 		if ( lexer.token != Symbol.RIGHTCURBRACKET ) signalError.showError("} expected");
 
 		lexer.nextToken();
-
+        return null;
 	}
 
 	private void localDec() {
@@ -261,7 +293,7 @@ public class Compiler {
 			result = Type.stringType;
 			break;
 		case IDENT:
-			// # corrija: faça uma busca na TS para buscar a classe
+			// # corrija: faï¿½a uma busca na TS para buscar a classe
 			// IDENT deve ser uma classe.
 			result = null;
 			break;
@@ -365,8 +397,8 @@ public class Compiler {
 	}
 
 	/*
-	 * retorne true se 'name' é uma classe declarada anteriormente. É necessário
-	 * fazer uma busca na tabela de símbolos para isto.
+	 * retorne true se 'name' ï¿½ uma classe declarada anteriormente. ï¿½ necessï¿½rio
+	 * fazer uma busca na tabela de sï¿½mbolos para isto.
 	 */
 	private boolean isType(String name) {
 		return this.symbolTable.getInGlobal(name) != null;
@@ -379,11 +411,11 @@ public class Compiler {
 
 		if ( lexer.token == Symbol.INT || lexer.token == Symbol.BOOLEAN
 				|| lexer.token == Symbol.STRING ||
-				// token é uma classe declarada textualmente antes desta
-				// instrução
+				// token ï¿½ uma classe declarada textualmente antes desta
+				// instruï¿½ï¿½o
 				(lexer.token == Symbol.IDENT && isType(lexer.getStringValue())) ) {
 			/*
-			 * uma declaração de variável. 'lexer.token' é o tipo da variável
+			 * uma declaraï¿½ï¿½o de variï¿½vel. 'lexer.token' ï¿½ o tipo da variï¿½vel
 			 * 
 			 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ] | LocalDec 
 			 * LocalDec ::= Type IdList ``;''
@@ -681,7 +713,7 @@ public class Compiler {
 				signalError.showError("Identifier expected");
 			messageName = lexer.getStringValue();
 			/*
-			 * para fazer as conferências semânticas, procure por 'messageName'
+			 * para fazer as conferï¿½ncias semï¿½nticas, procure por 'messageName'
 			 * na superclasse/superclasse da superclasse etc
 			 */
 			lexer.nextToken();
@@ -715,10 +747,10 @@ public class Compiler {
 					if ( lexer.token == Symbol.DOT ) {
 						// Id "." Id "." Id "(" [ ExpressionList ] ")"
 						/*
-						 * se o compilador permite variáveis estáticas, é possível
-						 * ter esta opção, como
+						 * se o compilador permite variï¿½veis estï¿½ticas, ï¿½ possï¿½vel
+						 * ter esta opï¿½ï¿½o, como
 						 *     Clock.currentDay.setDay(12);
-						 * Contudo, se variáveis estáticas não estiver nas especificações,
+						 * Contudo, se variï¿½veis estï¿½ticas nï¿½o estiver nas especificaï¿½ï¿½es,
 						 * sinalize um erro neste ponto.
 						 */
 						lexer.nextToken();
@@ -733,8 +765,8 @@ public class Compiler {
 						// Id "." Id "(" [ ExpressionList ] ")"
 						exprList = this.realParameters();
 						/*
-						 * para fazer as conferências semânticas, procure por
-						 * método 'ident' na classe de 'firstId'
+						 * para fazer as conferï¿½ncias semï¿½nticas, procure por
+						 * mï¿½todo 'ident' na classe de 'firstId'
 						 */
 					}
 					else {
@@ -756,7 +788,7 @@ public class Compiler {
 			if ( lexer.token != Symbol.DOT ) {
 				// only 'this'
 				// retorne um objeto da ASA que representa 'this'
-				// confira se não estamos em um método estático
+				// confira se nï¿½o estamos em um mï¿½todo estï¿½tico
 				return null;
 			}
 			else {
@@ -765,12 +797,12 @@ public class Compiler {
 					signalError.showError("Identifier expected");
 				id = lexer.getStringValue();
 				lexer.nextToken();
-				// já analisou "this" "." Id
+				// jï¿½ analisou "this" "." Id
 				if ( lexer.token == Symbol.LEFTPAR ) {
 					// "this" "." Id "(" [ ExpressionList ] ")"
 					/*
-					 * Confira se a classe corrente possui um método cujo nome é
-					 * 'ident' e que pode tomar os parâmetros de ExpressionList
+					 * Confira se a classe corrente possui um mï¿½todo cujo nome ï¿½
+					 * 'ident' e que pode tomar os parï¿½metros de ExpressionList
 					 */
 					exprList = this.realParameters();
 				}
@@ -786,7 +818,7 @@ public class Compiler {
 					// retorne o objeto da ASA que representa "this" "." Id
 					/*
 					 * confira se a classe corrente realmente possui uma
-					 * variável de instância 'ident'
+					 * variï¿½vel de instï¿½ncia 'ident'
 					 */
 					return null;
 				}

@@ -9,14 +9,38 @@ public class AssignStatement extends Statement{
     private LocalVariableList varList;
 
     public AssignStatement(LocalVariableList varList, Expr left, Expr right) {
-        this.varList = varList;
-        this.leftPart = left;
-        this.rightPart = right;
+        this.setVarList(varList);
+        this.setLeftPart(left);
+        this.setRightPart(right);
     }
 
 
     @Override
     public void genC(PW pw) {
 
+    }
+
+    public Expr getLeftPart() {
+        return leftPart;
+    }
+
+    public void setLeftPart(Expr leftPart) {
+        this.leftPart = leftPart;
+    }
+
+    public Expr getRightPart() {
+        return rightPart;
+    }
+
+    public void setRightPart(Expr rightPart) {
+        this.rightPart = rightPart;
+    }
+
+    public LocalVariableList getVarList() {
+        return varList;
+    }
+
+    public void setVarList(LocalVariableList varList) {
+        this.varList = varList;
     }
 }

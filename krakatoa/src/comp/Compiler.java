@@ -440,6 +440,9 @@ public class Compiler {
 	 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ] | LocalDec
 	 */
 	//Mudei o tipo de retorno para um STMT. Antes era um Expr
+    //Se for só declaracao, a parte direita e esquerda vai ser null
+    //Se for a parte de expressao, a var List vai estar null
+    //Fazer verificacao quando for gerar codigo
 	private AssignStatement assignExprLocalDec() {
         LocalVariableList varList = null;
         Expr left = null;

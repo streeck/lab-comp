@@ -243,22 +243,6 @@ public class Compiler {
         return method;
 	}
 
-	private void localDec() {
-		// LocalDec ::= Type IdList ";"
-
-		Type type = type();
-		if ( lexer.token != Symbol.IDENT ) signalError.showError("Identifier expected");
-		Variable v = new Variable(lexer.getStringValue(), type);
-		lexer.nextToken();
-		while (lexer.token == Symbol.COMMA) {
-			lexer.nextToken();
-			if ( lexer.token != Symbol.IDENT )
-				signalError.showError("Identifier expected");
-			v = new Variable(lexer.getStringValue(), type);
-			lexer.nextToken();
-		}
-	}
-
 	private ParamList formalParamDec() {
 		// FormalParamDec ::= ParamDec { "," ParamDec }
 		ParamList paramList = new ParamList();
@@ -315,16 +299,6 @@ public class Compiler {
 		}
 		lexer.nextToken();
 		return result;
-	}
-
-	private void compositeStatement() {
-
-		lexer.nextToken();
-		statementList();
-		if ( lexer.token != Symbol.RIGHTCURBRACKET )
-			signalError.showError("} expected");
-		else
-			lexer.nextToken();
 	}
 
 	private StatementList statementList() {
@@ -412,9 +386,50 @@ public class Compiler {
 		return new StatementAssert(e, lineNumber, message);
 	}
 
+	private LocalVariableList localDec() {
+		// LocalDec ::= Type IdList ";"
+		LocalVariableList localVariableList = new LocalVariableList();
+		Type type = type();
+		if ( lexer.token != Symbol.IDENT ) signalError.showError("Identifier expected");
+		Variable v = new Variable(lexer.getStringValue(), type);
+        //Add a variavel, caso ela não exista ainda, na tabela local
+        Variable aux = symbolTable.putInLocal(lexer.getStringValue(), v);
+        //Verifica se ela já existia
+        if(aux == null) localVariableList.addElement(v);
+        else signalError.showError("Variable " + lexer.getStringValue() + "is being redeclared");
+
+        lexer.nextToken();
+
+        while (lexer.token == Symbol.COMMA) {
+			lexer.nextToken();
+			if ( lexer.token != Symbol.IDENT )
+				signalError.showError("Identifier expected");
+			v = new Variable(lexer.getStringValue(), type);
+            //Add a variavel, caso ela não exista ainda, na tabela local
+            aux = symbolTable.getInLocal(lexer.getStringValue());
+            //Verifica se ela já existia
+            if(aux == null){
+                symbolTable.putInLocal(lexer.getStringValue(), v);
+                localVariableList.addElement(v);
+            }
+            else signalError.showError("Variable " + lexer.getStringValue() + "is being redeclared");
+			lexer.nextToken();
+		}
+		return localVariableList;
+	}
+
+	private void compositeStatement() {
+
+		lexer.nextToken();
+		statementList();
+		if ( lexer.token != Symbol.RIGHTCURBRACKET )
+			signalError.showError("} expected");
+		else
+			lexer.nextToken();
+	}
 	/*
-	 * retorne true se 'name' � uma classe declarada anteriormente. � necess�rio
-	 * fazer uma busca na tabela de s�mbolos para isto.
+	 * retorne true se 'name' é uma classe declarada anteriormente. É necessário
+	 * fazer uma busca na tabela de símbolos para isto.
 	 */
 	private boolean isType(String name) {
 		return this.symbolTable.getInGlobal(name) != null;
@@ -427,11 +442,11 @@ public class Compiler {
 
 		if ( lexer.token == Symbol.INT || lexer.token == Symbol.BOOLEAN
 				|| lexer.token == Symbol.STRING ||
-				// token � uma classe declarada textualmente antes desta
-				// instru��o
+				// token é uma classe declarada textualmente antes desta
+				// instrução
 				(lexer.token == Symbol.IDENT && isType(lexer.getStringValue())) ) {
 			/*
-			 * uma declara��o de vari�vel. 'lexer.token' � o tipo da vari�vel
+			 * uma declaração de variável. 'lexer.token' é o tipo da variável
 			 * 
 			 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ] | LocalDec 
 			 * LocalDec ::= Type IdList ``;''

@@ -319,7 +319,7 @@ public class Compiler {
 		 *                ``;'' | ReturnStat ``;'' | ReadStat ``;'' | WriteStat ``;'' |
 		 *               ``break'' ``;'' | ``;'' | CompStatement | LocalDec
 		 */
-
+        Statement stmt = null;
 		switch (lexer.token) {
 		case THIS:
 		case IDENT:
@@ -330,42 +330,42 @@ public class Compiler {
 			assignExprLocalDec();
 			break;
 		case ASSERT:
-			assertStatement();
+			stmt = assertStatement();
 			break;
 		case RETURN:
-			returnStatement();
+			stmt = returnStatement();
 			break;
 		case READ:
-			readStatement();
+			stmt = readStatement();
 			break;
 		case WRITE:
-			writeStatement();
+			stmt = writeStatement();
 			break;
 		case WRITELN:
-			writelnStatement();
+			stmt = writelnStatement();
 			break;
 		case IF:
-			ifStatement();
+			stmt = ifStatement();
 			break;
 		case BREAK:
-			breakStatement();
+			stmt = breakStatement();
 			break;
 		case WHILE:
-			whileStatement();
+			stmt = whileStatement();
 			break;
 		case SEMICOLON:
-			nullStatement();
+			stmt = nullStatement();
 			break;
 		case LEFTCURBRACKET:
-			compositeStatement();
+			stmt = compositeStatement();
 			break;
 		default:
 			signalError.showError("Statement expected");
 		}
-		return null;
+		return stmt;
 	}
 
-	private Statement assertStatement() {
+	private StatementAssert assertStatement() {
 		lexer.nextToken();
 		int lineNumber = lexer.getLineNumber();
 		Expr e = expr();
@@ -418,14 +418,15 @@ public class Compiler {
 		return localVariableList;
 	}
 
-	private void compositeStatement() {
-
+	private CompositeStatement compositeStatement() {
 		lexer.nextToken();
-		statementList();
+        CompositeStatement compositeStatement = new CompositeStatement();
+        compositeStatement.setStatementList(statementList());
 		if ( lexer.token != Symbol.RIGHTCURBRACKET )
 			signalError.showError("} expected");
 		else
 			lexer.nextToken();
+        return compositeStatement;
 	}
 	/*
 	 * retorne true se 'name' é uma classe declarada anteriormente. É necessário
@@ -481,42 +482,54 @@ public class Compiler {
 		return anExprList;
 	}
 
-	private void whileStatement() {
-
+	private WhileStatement whileStatement() {
+        Expr e;
+        Statement stmt;
 		lexer.nextToken();
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
-		expr();
+		e = expr();
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 		lexer.nextToken();
-		statement();
+		stmt = statement();
+
+        return new WhileStatement(e,stmt);
 	}
 
-	private void ifStatement() {
-
+	private IfStatement ifStatement() {
+        Statement stmtIf, stmtElse;
+        Expr e;
 		lexer.nextToken();
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
-		expr();
+		e = expr();
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 		lexer.nextToken();
-		statement();
+		stmtIf = statement();
+
+        IfStatement ifStatement = new IfStatement(stmtIf, e);
 		if ( lexer.token == Symbol.ELSE ) {
 			lexer.nextToken();
-			statement();
+			stmtElse = statement();
+            ifStatement.setStmtElse(stmtElse);
 		}
+
+		return ifStatement;
 	}
 
-	private void returnStatement() {
-
+	private ReturnStatement returnStatement() {
+        Expr e;
 		lexer.nextToken();
-		expr();
+		e = expr();
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
+
+        return new ReturnStatement(e);
 	}
 
-	private void readStatement() {
+	private ReadStatement readStatement() {
+        VariableList varList = new VariableList();
 		lexer.nextToken();
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
@@ -530,6 +543,8 @@ public class Compiler {
 				signalError.show(ErrorSignaller.ident_expected);
 
 			String name = lexer.getStringValue();
+            //Fazer verificacoes --- recuperar variavel.
+
 			lexer.nextToken();
 			if ( lexer.token == Symbol.COMMA )
 				lexer.nextToken();
@@ -542,43 +557,51 @@ public class Compiler {
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
+
+        return new ReadStatement(varList);
 	}
 
-	private void writeStatement() {
-
+	private WriteStatement writeStatement() {
+        ExprList exprList;
 		lexer.nextToken();
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
-		exprList();
+		exprList = exprList();
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 		lexer.nextToken();
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
+        return new WriteStatement(exprList);
 	}
 
-	private void writelnStatement() {
-
+	private WritelnStatement writelnStatement(){
+        ExprList e;
 		lexer.nextToken();
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
-		exprList();
+		e = exprList();
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 		lexer.nextToken();
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
+        return new WritelnStatement(e);
 	}
 
-	private void breakStatement() {
+	private BreakStatement breakStatement() {
+        BreakStatement breakstmt = new BreakStatement();
 		lexer.nextToken();
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
+
+        return breakstmt;
 	}
 
-	private void nullStatement() {
-		lexer.nextToken();
+	private NullStatement nullStatement() {
+        lexer.nextToken();
+        return new NullStatement();
 	}
 
 	private ExprList exprList() {

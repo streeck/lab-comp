@@ -176,7 +176,7 @@ public class Compiler {
 			String name = lexer.getStringValue();
 			lexer.nextToken();
 			if ( lexer.token == Symbol.LEFTPAR )
-				methodList = methodDec(t, name, qualifier);
+				methodList.addElement(methodDec(t, name, qualifier));
 			else if ( qualifier != Symbol.PRIVATE )
 				signalError.showError("Attempt to declare a public instance variable");
 			else
@@ -209,7 +209,7 @@ public class Compiler {
 			String variableName = lexer.getStringValue();
             //TO DO::
             //A intencao é ver se ela já vou colocada na tabela de atributos
-            //Se não tiver sido, add nessa tabela. Mas não sei se esse de atributos deveria ser o global
+            //Se não tiver sido, add nessa tabela. Mas não sei se essa inserçao de atributos deveria ser o global
             //Add a variavel na lista
             variableList.addElement( new InstanceVariable(variableName,type));
 			lexer.nextToken();
@@ -220,25 +220,27 @@ public class Compiler {
         return variableList;
 	}
 
-	private MethodList methodDec(Type type, String name, Symbol qualifier) {
+	private Method methodDec(Type type, String name, Symbol qualifier) {
 		/*
 		 * MethodDec ::= Qualifier Return Id "("[ FormalParamDec ] ")" "{"
 		 *                StatementList "}"
 		 */
-        MethodList methodList = null;
+        Method method = new Method(type, name, qualifier);
 		lexer.nextToken();
-		if ( lexer.token != Symbol.RIGHTPAR ) formalParamDec();
+		if ( lexer.token != Symbol.RIGHTPAR ){
+			method.setParamList(formalParamDec());
+		}
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 
 		lexer.nextToken();
 		if ( lexer.token != Symbol.LEFTCURBRACKET ) signalError.showError("{ expected");
 
 		lexer.nextToken();
-		statementList();
+		method.setStmtList(statementList());
 		if ( lexer.token != Symbol.RIGHTCURBRACKET ) signalError.showError("} expected");
 
 		lexer.nextToken();
-        return null;
+        return method;
 	}
 
 	private void localDec() {
@@ -257,22 +259,32 @@ public class Compiler {
 		}
 	}
 
-	private void formalParamDec() {
+	private ParamList formalParamDec() {
 		// FormalParamDec ::= ParamDec { "," ParamDec }
-
-		paramDec();
+		ParamList paramList = new ParamList();
+		paramList.addElement(paramDec());
 		while (lexer.token == Symbol.COMMA) {
 			lexer.nextToken();
-			paramDec();
+			paramList.addElement(paramDec());
 		}
+		return paramList;
 	}
 
-	private void paramDec() {
+	private Parameter paramDec() {
 		// ParamDec ::= Type Id
-
-		type();
+		Parameter parameter;
+		Type type;
+		String name;
+		type = type();
 		if ( lexer.token != Symbol.IDENT ) signalError.showError("Identifier expected");
+
+		//Nao sei ao certo se é assim que se pega o nome do paramentro a partir do lexer.
+		name = lexer.getStringValue();
+
+		parameter = new Parameter(name, type);
 		lexer.nextToken();
+
+		return parameter;
 	}
 
 	private Type type() {
@@ -315,16 +327,19 @@ public class Compiler {
 			lexer.nextToken();
 	}
 
-	private void statementList() {
+	private StatementList statementList() {
 		// CompStatement ::= "{" { Statement } "}"
+		StatementList stmtList = new StatementList();
 		Symbol tk;
 		// statements always begin with an identifier, if, read, write, ...
 		while ((tk = lexer.token) != Symbol.RIGHTCURBRACKET
 				&& tk != Symbol.ELSE)
-			statement();
+			stmtList.addElement(statement());
+
+		return stmtList;
 	}
 
-	private void statement() {
+	private Statement statement() {
 		/*
 		 * Statement ::= Assignment ``;'' | IfStat |WhileStat | MessageSend
 		 *                ``;'' | ReturnStat ``;'' | ReadStat ``;'' | WriteStat ``;'' |
@@ -373,6 +388,7 @@ public class Compiler {
 		default:
 			signalError.showError("Statement expected");
 		}
+		return null;
 	}
 
 	private Statement assertStatement() {

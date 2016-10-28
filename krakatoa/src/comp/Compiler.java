@@ -327,7 +327,7 @@ public class Compiler {
 		case INT:
 		case BOOLEAN:
 		case STRING:
-			assignExprLocalDec();
+			stmt = assignExprLocalDec();
 			break;
 		case ASSERT:
 			stmt = assertStatement();
@@ -439,8 +439,11 @@ public class Compiler {
 	/*
 	 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ] | LocalDec
 	 */
-	private Expr assignExprLocalDec() {
-
+	//Mudei o tipo de retorno para um STMT. Antes era um Expr
+	private AssignStatement assignExprLocalDec() {
+        LocalVariableList varList = null;
+        Expr left = null;
+        Expr right = null;
 		if ( lexer.token == Symbol.INT || lexer.token == Symbol.BOOLEAN
 				|| lexer.token == Symbol.STRING ||
 				// token é uma classe declarada textualmente antes desta
@@ -452,23 +455,23 @@ public class Compiler {
 			 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ] | LocalDec 
 			 * LocalDec ::= Type IdList ``;''
 			 */
-			localDec();
+			varList = localDec();
 		}
 		else {
 			/*
 			 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ]
 			 */
-			expr();
+			left = expr();
 			if ( lexer.token == Symbol.ASSIGN ) {
 				lexer.nextToken();
-				expr();
+				right = expr();
 				if ( lexer.token != Symbol.SEMICOLON )
 					signalError.showError("';' expected", true);
 				else
 					lexer.nextToken();
 			}
 		}
-		return null;
+		return new AssignStatement(varList,left, right);
 	}
 
 	private ExprList realParameters() {

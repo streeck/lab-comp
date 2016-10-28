@@ -1,6 +1,8 @@
 /**
   
  */
+//Angela Rodrigues Ferreira 552070
+//Charles David de Moraes 489662
 package ast;
 
 import java.util.ArrayList;
@@ -13,7 +15,7 @@ import java.util.ArrayList;
  * end <br>
  * </code>
  * 
-   @author José
+   @author JosÃ©
    
  */
 public class MetaobjectCall {

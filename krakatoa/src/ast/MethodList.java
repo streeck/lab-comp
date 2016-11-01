@@ -27,5 +27,13 @@ public class MethodList {
         return methodList.size();
     }
 
+    //Retorna true se o metodo já existir no vetor.
+    //Caso contrário retorna falso.
+    public boolean exist(Method method) {
+        if(!methodList.isEmpty())
+            if(methodList.contains(method))
+                return true;
 
+        return false;
+    }
 }

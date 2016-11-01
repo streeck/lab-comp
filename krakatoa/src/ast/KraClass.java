@@ -12,7 +12,6 @@ public class KraClass extends Type {
    private MethodList publicMethodList;
    private MethodList privateMethodLis;
 
-
    public KraClass( String name ) {
       super(name);
       publicMethodList = new MethodList();
@@ -65,6 +64,13 @@ public class KraClass extends Type {
 
    public void setPrivateMethodLis(MethodList privateMethodLis) {
       this.privateMethodLis = privateMethodLis;
+   }
+
+   //Retorna True se o metodo já existir, ou na lista de publico, ou na lista de privados.
+   public boolean exitMethod(Method method) {
+       if( publicMethodList.exist(method) || privateMethodLis.exist(method) )
+           return true;
+       return false;
    }
    // private MethodList publicMethodList, privateMethodList;
    // metodos publicos get e set para obter e iniciar as variaveis acima,

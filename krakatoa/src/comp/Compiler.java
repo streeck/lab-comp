@@ -122,7 +122,8 @@ public class Compiler {
 		 */
 		KraClass kraClass, superClass;
         InstanceVariableList variableList = new InstanceVariableList();
-        MethodList methodList = new MethodList();
+        //MethodList methodList = new MethodList();
+		Method method = null;
         Boolean publicQualifier = false; //Indica se o qualifier é publico ou privado
 
 		if ( lexer.token != Symbol.CLASS ) signalError.showError("'class' expected");
@@ -130,9 +131,16 @@ public class Compiler {
 		if ( lexer.token != Symbol.IDENT )
 			signalError.show(ErrorSignaller.ident_expected);
 		String className = lexer.getStringValue();
-        kraClass = new KraClass(className);
-		symbolTable.putInGlobal(className, kraClass);
 
+		//Verifica se a classe ja foi declarada anteriormente
+		kraClass = symbolTable.getInGlobal(className);
+		if(kraClass != null) signalError.showError("Class "+className+"already declared");
+		else { //Caso nao tenha sido, ela eh colocada na tabela de classes
+			   //CurrentClass guarda a classe atual para futuras verificações
+			kraClass = new KraClass(className);
+			symbolTable.putInGlobal(className, kraClass);
+			currentClass = kraClass;
+		}
 		lexer.nextToken();
 		if ( lexer.token == Symbol.EXTENDS ) {
 			lexer.nextToken();
@@ -141,9 +149,11 @@ public class Compiler {
 			String superclassName = lexer.getStringValue();
 
             //Verifica se a superclasse já foi declarada previamente.
+			//Verifica também se a superclasse tem o mesmo nome que a classe avaliada no momento.
             superClass = symbolTable.getInGlobal(superclassName);
-            if(superClass == null) signalError.showError("Super Class expected");
-            else kraClass.setSuperclass(superClass);
+            if(superClass == null) signalError.showError("Super Class wasn't declared");
+            else if(superclassName.equals(className)) signalError.showError("Super Class has the same name name as the class");
+			else kraClass.setSuperclass(superClass);
 
             lexer.nextToken();
 		}
@@ -175,8 +185,17 @@ public class Compiler {
 				signalError.showError("Identifier expected");
 			String name = lexer.getStringValue();
 			lexer.nextToken();
-			if ( lexer.token == Symbol.LEFTPAR )
-				methodList.addElement(methodDec(t, name, qualifier));
+			if ( lexer.token == Symbol.LEFTPAR ){
+				method  = methodDec(t, name, qualifier);
+                //Verifica se o methodo ja existe na lista
+                //Se nao existir, add. Se existir mostra erro
+                if(!kraClass.exitMethod(method)) {
+                    //Da set nos métodos publicos ou privados com base no qualifier
+                    if (publicQualifier) kraClass.addPublicMethod(method);
+                    else kraClass.addPrivateMethod(method);
+                }else signalError.showError("Method "+method.getName()+" already declared.");
+
+			}
 			else if ( qualifier != Symbol.PRIVATE )
 				signalError.showError("Attempt to declare a public instance variable");
 			else
@@ -185,12 +204,10 @@ public class Compiler {
 		if ( lexer.token != Symbol.RIGHTCURBRACKET )
 			signalError.showError("public/private or \"}\" expected");
 
-        kraClass.setInstanceVariableList(variableList);
-        //Dar set nos métodos publicos ou privados com base no qualifier
-        if(publicQualifier) kraClass.setPublicMethodList(methodList);
-        else kraClass.setPrivateMethodLis(methodList);
-
+		kraClass.setInstanceVariableList(variableList);
 		lexer.nextToken();
+
+		currentClass = kraClass;
 	return kraClass;
 	}
 
@@ -198,7 +215,7 @@ public class Compiler {
 		// InstVarDec ::= [ "static" ] "private" Type IdList ";"
         InstanceVariableList variableList = new InstanceVariableList();
 		InstanceVariable v = null;
-
+		InstanceVariable variable;
         //Add a variavel na lista de variaveis de instancia
         variableList.addElement( new InstanceVariable(name,type));
 
@@ -207,11 +224,13 @@ public class Compiler {
 			if ( lexer.token != Symbol.IDENT )
 				signalError.showError("Identifier expected");
 			String variableName = lexer.getStringValue();
-            //TO DO::
-            //A intencao é ver se ela já vou colocada na tabela de atributos
-            //Se não tiver sido, add nessa tabela. Mas não sei se essa inserçao de atributos deveria ser o global
-            //Add a variavel na lista
-            variableList.addElement( new InstanceVariable(variableName,type));
+			variable = new InstanceVariable(variableName,type);
+			//Add a variavel na lista
+			//Se a variavel nao exisitir na lista, ela addiciona, se ja existir exibe erro de redeclaracao
+			if(!variableList.exist(variable))
+				variableList.addElement(variable);
+			else signalError.showError("Instance Variable "+variable.getName()+" already declared");
+
 			lexer.nextToken();
 		}
 		if ( lexer.token != Symbol.SEMICOLON )
@@ -289,7 +308,7 @@ public class Compiler {
 			result = Type.stringType;
 			break;
 		case IDENT:
-			// # corrija: fa�a uma busca na TS para buscar a classe
+			// # corrija: faca uma busca na TS para buscar a classe
 			// IDENT deve ser uma classe.
 			result = null;
 			break;
@@ -327,38 +346,38 @@ public class Compiler {
 		case INT:
 		case BOOLEAN:
 		case STRING:
-			stmt = assignExprLocalDec();
-			break;
+			return assignExprLocalDec();
+			//break;
 		case ASSERT:
-			stmt = assertStatement();
-			break;
+			return assertStatement();
+			//break;
 		case RETURN:
-			stmt = returnStatement();
-			break;
+			return returnStatement();
+			//break;
 		case READ:
-			stmt = readStatement();
-			break;
+			return readStatement();
+			//break;
 		case WRITE:
-			stmt = writeStatement();
-			break;
+			return writeStatement();
+			//break;
 		case WRITELN:
-			stmt = writelnStatement();
-			break;
+			return writelnStatement();
+			//break;
 		case IF:
-			stmt = ifStatement();
-			break;
+			return ifStatement();
+			//break;
 		case BREAK:
-			stmt = breakStatement();
-			break;
+			return breakStatement();
+			//break;
 		case WHILE:
-			stmt = whileStatement();
-			break;
+			return whileStatement();
+			//break;
 		case SEMICOLON:
-			stmt = nullStatement();
-			break;
+			return nullStatement();
+			//break;
 		case LEFTCURBRACKET:
-			stmt = compositeStatement();
-			break;
+			return compositeStatement();
+			//break;
 		default:
 			signalError.showError("Statement expected");
 		}
@@ -915,5 +934,6 @@ public class Compiler {
 	private SymbolTable		symbolTable;
 	private Lexer			lexer;
 	private ErrorSignaller	signalError;
-
+	private KraClass 		currentClass;
+	private Method          currentMethod;
 }

@@ -5,6 +5,8 @@ package ast;
 import java.util.*;
 
 public class InstanceVariableList {
+    private ArrayList<InstanceVariable> instanceVariableList;
+
 
     public InstanceVariableList() {
        instanceVariableList = new ArrayList<InstanceVariable>();
@@ -22,6 +24,18 @@ public class InstanceVariableList {
         return instanceVariableList.size();
     }
 
-    private ArrayList<InstanceVariable> instanceVariableList;
+    //Retorna True se a varivel informada já existir no array
+    public boolean exist(InstanceVariable variable) {
+        String name;
+        //Verifica se a variavel já foi declarada.
+        if(!instanceVariableList.isEmpty()){
+            for(InstanceVariable aux: instanceVariableList){
+                name = aux.getName();
+                if(name == variable.getName())
+                    return true;
+            }
+        }
 
+        return false;
+    }
 }

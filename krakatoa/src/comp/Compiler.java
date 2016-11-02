@@ -189,7 +189,7 @@ public class Compiler {
 				method  = methodDec(t, name, qualifier);
                 //Verifica se o methodo ja existe na lista
                 //Se nao existir, add. Se existir mostra erro
-                if(!kraClass.exitMethod(method)) {
+                if(!kraClass.existMethod(method)) {
                     //Da set nos métodos publicos ou privados com base no qualifier
                     if (publicQualifier) kraClass.addPublicMethod(method);
                     else kraClass.addPrivateMethod(method);
@@ -491,7 +491,7 @@ public class Compiler {
 					signalError.showError("';' expected", true);
 				else
 					lexer.nextToken();
-			}
+			}else signalError.showError("Statement expected");
 		}
 		return new AssignStatement(varList,left, right);
 	}

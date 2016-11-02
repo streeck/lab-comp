@@ -67,10 +67,14 @@ public class KraClass extends Type {
    }
 
    //Retorna True se o metodo já existir, ou na lista de publico, ou na lista de privados.
-   public boolean exitMethod(Method method) {
+   public boolean existMethod(Method method) {
        if( publicMethodList.exist(method) || privateMethodLis.exist(method) )
            return true;
        return false;
+   }
+
+   public boolean existInstanceVariable(InstanceVariable v){
+       return instanceVariableList.exist(v);
    }
    // private MethodList publicMethodList, privateMethodList;
    // metodos publicos get e set para obter e iniciar as variaveis acima,

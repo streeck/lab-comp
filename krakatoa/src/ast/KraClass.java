@@ -1,21 +1,114 @@
+//Angela Rodrigues Ferreira 552070
+//Charles David de Moraes 489662
 package ast;
 /*
  * Krakatoa Class
  */
 public class KraClass extends Type {
-	
+
+   private String name;
+   private KraClass superclass;
+   private InstanceVariableList instanceVariableList;
+   private MethodList publicMethodList;
+   private MethodList privateMethodLis;
+
    public KraClass( String name ) {
       super(name);
+      publicMethodList = new MethodList();
+      privateMethodLis = new MethodList();
+      instanceVariableList = new InstanceVariableList();
    }
    
    public String getCname() {
       return getName();
    }
-   
-   private String name;
-   private KraClass superclass;
-   private InstanceVariableList instanceVariableList;
-   // private MethodList publicMethodList, privateMethodList;
-   // métodos públicos get e set para obter e iniciar as variáveis acima,
-   // entre outros métodos
+
+   public void setName(String name) {
+      this.name = name;
+   }
+
+   public KraClass getSuperclass() {
+      return superclass;
+   }
+
+   public void setSuperclass(KraClass superclass) {
+      this.superclass = superclass;
+   }
+
+   public InstanceVariableList getInstanceVariableList() {
+      return instanceVariableList;
+   }
+
+   public void setInstanceVariableList(InstanceVariableList instanceVariableList) {
+      this.instanceVariableList = instanceVariableList;
+   }
+
+   public void addPublicMethod(Method m){
+      publicMethodList.addElement(m);
+   }
+
+   public void addPrivateMethod(Method m){
+      privateMethodLis.addElement(m);
+   }
+   public MethodList getPublicMethodList() {
+      return publicMethodList;
+   }
+
+   public void setPublicMethodList(MethodList publicMethodList) {
+      this.publicMethodList = publicMethodList;
+   }
+
+   public MethodList getPrivateMethodLis() {
+      return privateMethodLis;
+   }
+
+   public void setPrivateMethodLis(MethodList privateMethodLis) {
+      this.privateMethodLis = privateMethodLis;
+   }
+
+   //Retorna True se o metodo jÃ¡ existir, ou na lista de publico, ou na lista de privados.
+   public boolean existMethod(Method method) {
+       if( publicMethodList.exist(method) || privateMethodLis.exist(method) )
+           return true;
+       return false;
+   }
+   public boolean existMethod(String method) {
+      if( publicMethodList.exist(method) || privateMethodLis.exist(method) )
+         return true;
+      return false;
+   }
+   public boolean existInstanceVariable(InstanceVariable v){
+       return instanceVariableList.exist(v);
+   }
+
+   //Procura um metodo na superClasses para receber uma mensagem. Se existir um mÃ©todo com o mesmo nome
+   //Verifica se os parametros sÃ£o iguais.
+    public boolean findMessage(String messageName) {
+       KraClass aux;
+       aux = this.getSuperclass();
+       do{
+          if (aux.existMethod(messageName)){
+             return true;
+          }else{
+            aux = aux.getSuperclass();
+          }
+       }while(aux != null);
+       return false;
+    }
+    //Retorna true se os parametros
+   public boolean verifyParamMessage(String messageName) {
+      KraClass aux;
+      aux = this.getSuperclass();
+      do{
+         if (aux.existMethod(messageName)){
+            return true;
+         }else{
+            aux = aux.getSuperclass();
+         }
+      }while(aux != null);
+      return false;
+   }
+    // private MethodList publicMethodList, privateMethodList;
+   // metodos publicos get e set para obter e iniciar as variaveis acima,
+   // entre outros metodos
 }

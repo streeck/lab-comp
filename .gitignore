@@ -1,0 +1,8 @@
+*/.DS_STORE
+*/.project
+*/.idea
+*/.classpath
+*/bin/
+*/krakatoa.iml
+*.kra2
+*.txt

@@ -1,8 +1,13 @@
+//Angela Rodrigues Ferreira 552070
+//Charles David de Moraes 489662
 package ast;
+
+import com.sun.org.apache.bcel.internal.classfile.LocalVariable;
 
 import java.util.*;
 
 public class LocalVariableList {
+    private ArrayList<Variable> localList;
 
     public LocalVariableList() {
        localList = new ArrayList<Variable>();
@@ -20,6 +25,17 @@ public class LocalVariableList {
         return localList.size();
     }
 
-    private ArrayList<Variable> localList;
+    public boolean hasVariable(String name) {
+        for(Variable v: localList){
+            if(v.getName().equals("name")) return true;
+        }
+        return false;
+    }
 
+    public Variable getVariable(String name) {
+        for(Variable v: localList){
+            if(v.getName().equals("name")) return v;
+        }
+        return null;
+    }
 }

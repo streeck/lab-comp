@@ -1,8 +1,11 @@
+//Angela Rodrigues Ferreira 552070
+//Charles David de Moraes 489662
 package ast;
 
 import java.util.*;
 
 public class ExprList {
+    private ArrayList<Expr> exprList;
 
     public ExprList() {
         exprList = new ArrayList<Expr>();
@@ -22,6 +25,11 @@ public class ExprList {
         }
     }
 
-    private ArrayList<Expr> exprList;
-
+    public boolean containsBooleanType() {
+        for(Expr e: exprList){
+            if(e.getType() == Type.booleanType)
+                return true;
+        }
+        return false;
+    }
 }

@@ -32,4 +32,8 @@ public class ExprList {
         }
         return false;
     }
+
+    public int getSize() {
+      return exprList.size();
+    }
 }

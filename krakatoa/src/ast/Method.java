@@ -46,4 +46,14 @@ public class Method extends Variable{
             return true;
         return false;
     }
+
+    public boolean hasVariable(String variableName){
+        if(stmtList.searchVariable(variableName))
+            return true;
+        return false;
+    }
+
+    public Variable getVariable(String name) {
+        return stmtList.getVariable(name);
+    }
 }

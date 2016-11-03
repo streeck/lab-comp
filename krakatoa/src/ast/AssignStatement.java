@@ -43,4 +43,10 @@ public class AssignStatement extends Statement{
     public void setVarList(LocalVariableList varList) {
         this.varList = varList;
     }
+
+    public boolean searchVariable(String name){
+        if(varList.hasVariable(name)) return true;
+        return false;
+    }
+
 }

@@ -34,4 +34,25 @@ public class StatementList {
 
         return false;
     }
+
+    public boolean searchVariable(String variableName) {
+        for(Statement s: stmtList){
+            if(s instanceof AssignStatement){
+                AssignStatement assign = (AssignStatement)s;
+                if(assign.searchVariable(variableName))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public Variable getVariable(String name) {
+        for(Statement s: stmtList){
+            if(s instanceof AssignStatement){
+                Variable v = ((AssignStatement) s).getVarList().getVariable(name);
+                    return v;
+            }
+        }
+        return null;
+    }
 }

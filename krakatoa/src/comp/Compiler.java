@@ -223,6 +223,7 @@ public class Compiler {
 		lexer.nextToken();
 
 		currentClass = kraClass;
+		//currentMethod = method;
 
        if(kraClass.getName().equals("Program")){
             if(!kraClass.existMethod("run"))
@@ -268,10 +269,10 @@ public class Compiler {
 		 * MethodDec ::= Qualifier Return Id "("[ FormalParamDec ] ")" "{"
 		 *                StatementList "}"
 		 */
-        Method method = new Method(type, name, qualifier);
-        if(currentClass.getName() == "Program")
-            if(method.getName() == "run")
-                if(method.getType() != Type.voidType)
+        currentMethod = new Method(type, name, qualifier);
+        if(currentClass.getName().equals("Program"))
+            if(currentMethod.getName().equals("run"))
+                if(currentMethod.getType() != Type.voidType)
                     signalError.showError("Method 'run'of class 'Program' must return void");
 
 		lexer.nextToken();
@@ -280,12 +281,12 @@ public class Compiler {
             //method.setParamList(formalParamDec());
             //Verifica caso o metodo seja o run, nao pode ter parametro
 		    if(currentClass.getName().equals("Program")) {
-                if (method.getName().equals("run"))
+                if (currentMethod.getName().equals("run"))
                     if (p != null)
                         signalError.showError("Method 'run' of class Program must be parameterless");
             }
 
-            method.setParamList(p);
+			currentMethod.setParamList(p);
 		}
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 
@@ -293,18 +294,18 @@ public class Compiler {
 		if ( lexer.token != Symbol.LEFTCURBRACKET ) signalError.showError("{ expected");
 
 		lexer.nextToken();
-		method.setStmtList(statementList());
+		currentMethod.setStmtList(statementList());
         //Verifica se o metodo, caso seja void, tenha um return.
-        if(method.getType() != Type.voidType){
-            if(!method.hasReturn())
-                signalError.showError("Missing 'return' statement in method '"+method.getName()+"'");
+        if(currentMethod.getType() != Type.voidType){
+            if(!currentMethod.hasReturn())
+                signalError.showError("Missing 'return' statement in method '"+currentMethod.getName()+"'");
         }
 
 		if ( lexer.token != Symbol.RIGHTCURBRACKET ) signalError.showError("} expected");
 
 		lexer.nextToken();
-        currentMethod = method;
-        return method;
+        //currentMethod = method;
+        return currentMethod;
 	}
 
 	private ParamList formalParamDec() {
@@ -637,8 +638,15 @@ public class Compiler {
 				signalError.show(ErrorSignaller.ident_expected);
 
 			String name = lexer.getStringValue();
+			String teste = currentMethod.getName();
             //Fazer verificacoes --- recuperar variavel.
-
+			Variable v = currentMethod.getVariable(name);
+			String nomeTeste = v.getName();
+			System.out.println(v.getName());
+			Type typeTest = v.getType();
+			if(v.getType() == Type.booleanType) {
+				signalError.showError("Command 'read' does not accept 'boolean' variables");
+			}
 			lexer.nextToken();
 			if ( lexer.token == Symbol.COMMA )
 				lexer.nextToken();

@@ -6,4 +6,7 @@ abstract public class Statement {
 
 	abstract public void genC(PW pw);
 
+    //Para a classe AssignStatement
+    //public abstract boolean searchVariable(String variableName);
+    //public abstract Variable getVariable(String variableName);
 }

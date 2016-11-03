@@ -208,7 +208,7 @@ public class Compiler {
                         if (publicQualifier) kraClass.addPublicMethod(method);
                         else kraClass.addPrivateMethod(method);
                     }
-                }else signalError.showError("Method "+method.getName()+" already declared.");
+                }else signalError.showError("Method "+method.getName()+" is being redeclared.");
 
 			}
 			else if ( qualifier != Symbol.PRIVATE )
@@ -223,7 +223,7 @@ public class Compiler {
 		lexer.nextToken();
 
 		currentClass = kraClass;
-      
+
        if(kraClass.getName().equals("Program")){
             if(!kraClass.existMethod("run"))
             	signalError.showError("Method 'run' was not found in class 'Program'");
@@ -579,6 +579,10 @@ public class Compiler {
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
 		e = expr();
+		//Verifica se a expressao eh boolean
+		if(e.getType() != Type.booleanType)
+			signalError.showError("non-boolean expression in  'while' command");
+
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 		lexer.nextToken();
 		stmt = statement();

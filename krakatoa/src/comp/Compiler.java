@@ -305,6 +305,8 @@ public class Compiler {
 
 		lexer.nextToken();
         //currentMethod = method;
+
+		symbolTable.removeLocalIdent();
         return currentMethod;
 	}
 
@@ -638,7 +640,18 @@ public class Compiler {
 				signalError.show(ErrorSignaller.ident_expected);
 
 			String name = lexer.getStringValue();
-			String teste = currentMethod.getName();
+			Variable v = symbolTable.getInLocal(name);
+			if(v == null) signalError.showError("Variable '"+name+"' was not declared.");
+			else {
+				if(v.getType() == Type.booleanType) {
+					signalError.showError("Command 'read' does not accept 'boolean' variables");
+				}
+			}
+
+			/*String teste = currentMethod.getName();
+
+			System.out.println("O QUE TA ACONTECENDO G-ZUIS");
+
             //Fazer verificacoes --- recuperar variavel.
 			Variable v = currentMethod.getVariable(name);
 			String nomeTeste = v.getName();
@@ -646,7 +659,8 @@ public class Compiler {
 			Type typeTest = v.getType();
 			if(v.getType() == Type.booleanType) {
 				signalError.showError("Command 'read' does not accept 'boolean' variables");
-			}
+			}*/
+
 			lexer.nextToken();
 			if ( lexer.token == Symbol.COMMA )
 				lexer.nextToken();

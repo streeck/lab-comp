@@ -77,6 +77,16 @@ public class KraClass extends Type {
          return true;
       return false;
    }
+   public boolean existPublicMethod(String method) {
+      if (publicMethodList.exist(method))
+         return true;
+      return false;
+   }
+   public boolean existPrivateMethod(String method) {
+      if (privateMethodList.exist(method))
+         return true;
+      return false;
+   }
    public boolean existInstanceVariable(InstanceVariable v){
        return instanceVariableList.exist(v);
    }
@@ -90,6 +100,12 @@ public class KraClass extends Type {
      } else {
        return this.privateMethodList.getVariable(ident);
      }
+   }
+   public Method fetchPublicMethod(String ident) {
+     return this.publicMethodList.getVariable(ident);
+   }
+   public Method fetchPrivateMethod(String ident) {
+     return this.privateMethodList.getVariable(ident);
    }
    // private MethodList publicMethodList, privateMethodList;
    // metodos publicos get e set para obter e iniciar as variaveis acima,

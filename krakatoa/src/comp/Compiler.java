@@ -146,7 +146,8 @@ public class Compiler {
 			   //CurrentClass guarda a classe atual para futuras verificações
 			kraClass = new KraClass(className);
 			symbolTable.putInGlobal(className, kraClass);
-			currentClass = kraClass;
+		    String teste = kraClass.getName();
+            currentClass = kraClass;
 		}
 		lexer.nextToken();
 		if ( lexer.token == Symbol.EXTENDS ) {
@@ -203,6 +204,9 @@ public class Compiler {
                             if (publicQualifier) kraClass.addPublicMethod(method);
                             else kraClass.addPrivateMethod(method);
                         }
+                    }else{
+                        if (publicQualifier) kraClass.addPublicMethod(method);
+                        else kraClass.addPrivateMethod(method);
                     }
                 }else signalError.showError("Method "+method.getName()+" already declared.");
 
@@ -219,11 +223,11 @@ public class Compiler {
 		lexer.nextToken();
 
 		currentClass = kraClass;
-       //Não funciona//
-       /*if(currentClass.getName().equals("Program")){
-            if(!currentClass.existMethod("run"))
+      
+       if(kraClass.getName().equals("Program")){
+            if(!kraClass.existMethod("run"))
             	signalError.showError("Method 'run' was not found in class 'Program'");
-        }*/
+        }
 
 	return kraClass;
 	}
@@ -536,11 +540,11 @@ public class Compiler {
 				lexer.nextToken();
 				right = expr();
 
-                if(right.getType() == Type.voidType)
+               /* if(right.getType() == Type.voidType)
                     signalError.showError("Cant assignment a void call to a variable");
                 if(left.getType() == Type.booleanType && right.getType() == Type.intType)
                     signalError.showError("'int' cannot be assigned to 'boolean'");
-
+				*/
                 //Fazer verificacao de tipos compativeis
 
                 // --- se os dois tipos forem iguais

@@ -41,8 +41,9 @@ public class MethodList {
     public boolean exist(String name){
         //if(!methodList.isEmpty()){
             for(Method m : methodList){
-                if(m.getName().equals(name))
+                if(m.getName().equals(name)){
                     return true;
+                }
             }
         //}
         return false;

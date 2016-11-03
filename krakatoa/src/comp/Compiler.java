@@ -753,6 +753,29 @@ public class Compiler {
 				|| op == Symbol.OR) {
 			lexer.nextToken();
 			Expr right = term();
+
+			switch(op) {
+				case PLUS:
+					if (left.getType() != Type.intType || right.getType() != Type.intType) {
+						signalError.showError("type " + left.getType().getName() + " does not support operation '" + Symbol.PLUS + "'");
+					}
+				break;
+				case MINUS:
+					if (left.getType() != Type.intType || right.getType() != Type.intType) {
+						signalError.showError("type " + left.getType().getName() + " does not support operation '" + Symbol.MINUS + "'");
+					}
+					break;
+				case OR:
+					if (left.getType() != Type.booleanType || right.getType() != Type.booleanType) {
+						signalError.showError("type " + left.getType().getName() + " does not support operation '" + Symbol.OR + "'");
+					}
+				break;
+				case AND:
+					if (left.getType() != Type.booleanType || right.getType() != Type.booleanType) {
+						signalError.showError("type " + left.getType().getName() + " does not support operation '" + Symbol.AND + "'");
+					}
+					break;
+			}
 			left = new CompositeExpr(left, op, right);
 		}
 		return left;

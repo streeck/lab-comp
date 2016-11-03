@@ -38,4 +38,15 @@ public class InstanceVariableList {
 
         return false;
     }
+
+    public boolean exist(String variable) {
+        //Verifica se a variavel já foi declarada.
+        if(!instanceVariableList.isEmpty()){
+            for(InstanceVariable aux: instanceVariableList){
+                if(aux.getName() == variable)
+                    return true;
+            }
+        }
+        return false;
+    }
 }

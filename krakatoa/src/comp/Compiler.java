@@ -60,8 +60,8 @@ public class Compiler {
      *     public void run() { } <br>
      * end <br>
      * </code>
-     * 
-	   
+     *
+
 	 */
 	@SuppressWarnings("incomplete-switch")
 	private MetaobjectCall metaobjectCall() {
@@ -84,12 +84,12 @@ public class Compiler {
 					metaobjectParamList.add(lexer.getStringValue());
 				}
 				lexer.nextToken();
-				if ( lexer.token == Symbol.COMMA ) 
+				if ( lexer.token == Symbol.COMMA )
 					lexer.nextToken();
 				else
 					break;
 			}
-			if ( lexer.token != Symbol.RIGHTPAR ) 
+			if ( lexer.token != Symbol.RIGHTPAR )
 				signalError.showError("')' expected after metaobject call with parameters");
 			else
 				lexer.nextToken();
@@ -105,11 +105,11 @@ public class Compiler {
 				signalError.showError("The first parameter of metaobject 'ce' should be an integer number");
 			if ( !( metaobjectParamList.get(1) instanceof String) ||  !( metaobjectParamList.get(2) instanceof String) )
 				signalError.showError("The second and third parameters of metaobject 'ce' should be literal strings");
-			if ( metaobjectParamList.size() >= 4 && !( metaobjectParamList.get(3) instanceof String) )  
+			if ( metaobjectParamList.size() >= 4 && !( metaobjectParamList.get(3) instanceof String) )
 				signalError.showError("The fourth parameter of metaobject 'ce' should be a literal string");
-			
+
 		}
-			
+
 		return new MetaobjectCall(name, metaobjectParamList);
 	}
 
@@ -121,10 +121,10 @@ public class Compiler {
 
 		/*
 		 * KraClass ::= ``class'' Id [ ``extends'' Id ] "{" MemberList "}"
-		 * MemberList ::= { Qualifier Member } 
+		 * MemberList ::= { Qualifier Member }
 		 * Member ::= InstVarDec | MethodDec
-		 * InstVarDec ::= Type IdList ";" 
-		 * MethodDec ::= Qualifier Type Id "("[ FormalParamDec ] ")" "{" StatementList "}" 
+		 * InstVarDec ::= Type IdList ";"
+		 * MethodDec ::= Qualifier Type Id "("[ FormalParamDec ] ")" "{" StatementList "}"
 		 * Qualifier ::= [ "static" ]  ( "private" | "public" )
 		 */
 		KraClass kraClass, superClass = null;
@@ -453,7 +453,7 @@ public class Compiler {
 		lexer.nextToken();
 		if ( lexer.token == Symbol.SEMICOLON )
 			lexer.nextToken();
-		
+
 		return new StatementAssert(e, lineNumber, message);
 	}
 
@@ -528,8 +528,8 @@ public class Compiler {
 				(lexer.token == Symbol.IDENT && isType(lexer.getStringValue())) ) {
 			/*
 			 * uma declaração de variável. 'lexer.token' é o tipo da variável
-			 * 
-			 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ] | LocalDec 
+			 *
+			 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ] | LocalDec
 			 * LocalDec ::= Type IdList ``;''
 			 */
 			varList = localDec();
@@ -539,30 +539,54 @@ public class Compiler {
 			 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ]
 			 */
 			left = expr();
-			if ( lexer.token == Symbol.ASSIGN ) {
+//			lexer.nextToken();
+			if (lexer.token == Symbol.ASSIGN) {
 				lexer.nextToken();
 				right = expr();
 
-               /* if(right.getType() == Type.voidType)
-                    signalError.showError("Cant assignment a void call to a variable");
-                if(left.getType() == Type.booleanType && right.getType() == Type.intType)
-                    signalError.showError("'int' cannot be assigned to 'boolean'");
-				*/
-                //Fazer verificacao de tipos compativeis
-
-                // --- se os dois tipos forem iguais
-                    //se eles forem dos tipos basicos ( int, string, boolean) -- OK
-                //Se eles forem classes e forem iguais ok
-                //Se forem classes, mas não forem iguais, verificar se na hierarquia tem uma classe com o mesmo tipo
-                //se a parte esqueda foir uma classe e a segunda eh UndefinedType = ok
-                if ( lexer.token != Symbol.SEMICOLON )
+				if (right.getType() == Type.voidType) {
+					signalError.showError("Varibale cannot be assigned void value.");
+				}
+				if (!is_type_convertable(left.getType(), right.getType())) {
+					signalError.showError("Incompatible types.");
+				}
+                if (lexer.token != Symbol.SEMICOLON)
 					signalError.showError("';' expected", true);
 				else
 					lexer.nextToken();
-			}else signalError.showError("Statement expected");
+			}
+//			se der merda:
+//			adicione: else signalError.showError("Statement expected");
 		}
 		return new AssignStatement(varList,left, right);
 	}
+
+  private boolean is_type_convertable(Type left, Type right) {
+	if (left == right) {
+		if (left == Type.booleanType || left == Type.stringType || left == Type.intType) {
+			return true;
+		}
+	}
+	if (isType(left.getName()) && isType(right.getName())) {
+		if (left == right) {
+			return true;
+		} else {
+			KraClass rightClass = symbolTable.getInGlobal(right.getName());
+			rightClass = rightClass.getSuperclass();
+
+			while (rightClass != null) {
+				if (rightClass == left) {
+					return true;
+				}
+				rightClass = rightClass.getSuperclass();
+			}
+			return false;
+		}
+	} else if (isType(left.getName()) && right== Type.undefinedType) {
+		return true;
+	}
+	return false;
+  }
 
 	private ExprList realParameters() {
 		ExprList anExprList = null;
@@ -807,18 +831,18 @@ public class Compiler {
 	/*
 	 * Factor ::= BasicValue | "(" Expression ")" | "!" Factor | "null" |
 	 *      ObjectCreation | PrimaryExpr
-	 * 
-	 * BasicValue ::= IntValue | BooleanValue | StringValue 
-	 * BooleanValue ::=  "true" | "false" 
-	 * ObjectCreation ::= "new" Id "(" ")" 
-	 * PrimaryExpr ::= "super" "." Id "(" [ ExpressionList ] ")"  | 
+	 *
+	 * BasicValue ::= IntValue | BooleanValue | StringValue
+	 * BooleanValue ::=  "true" | "false"
+	 * ObjectCreation ::= "new" Id "(" ")"
+	 * PrimaryExpr ::= "super" "." Id "(" [ ExpressionList ] ")"  |
 	 *                 Id  |
-	 *                 Id "." Id | 
+	 *                 Id "." Id |
 	 *                 Id "." Id "(" [ ExpressionList ] ")" |
 	 *                 Id "." Id "." Id "(" [ ExpressionList ] ")" |
-	 *                 "this" | 
-	 *                 "this" "." Id | 
-	 *                 "this" "." Id "(" [ ExpressionList ] ")"  | 
+	 *                 "this" |
+	 *                 "this" "." Id |
+	 *                 "this" "." Id "(" [ ExpressionList ] ")"  |
 	 *                 "this" "." Id "." Id "(" [ ExpressionList ] ")"
 	 */
 	private Expr factor() {
@@ -826,6 +850,7 @@ public class Compiler {
 		Expr anExpr;
 		ExprList exprList;
 		String messageName, id;
+		Method method = null;
 
 		switch (lexer.token) {
 		// IntValue
@@ -860,6 +885,9 @@ public class Compiler {
 		case NOT:
 			lexer.nextToken();
 			anExpr = expr();
+			if (anExpr.getType() != Type.booleanType) {
+				signalError.showError("Invalid operator on " + anExpr.getType());
+			}
 			return new UnaryExpr(anExpr, Symbol.NOT);
 			// ObjectCreation ::= "new" Id "(" ")"
 		case NEW:
@@ -869,8 +897,8 @@ public class Compiler {
 
 			String className = lexer.getStringValue();
 			/*
-			 * // encontre a classe className in symbol table KraClass 
-			 *      aClass = symbolTable.getInGlobal(className); 
+			 * // encontre a classe className in symbol table KraClass
+			 *      aClass = symbolTable.getInGlobal(className);
 			 *      if ( aClass == null ) ...
 			 */
 
@@ -884,14 +912,14 @@ public class Compiler {
 			 */
 			return null;
 			/*
-          	 * PrimaryExpr ::= "super" "." Id "(" [ ExpressionList ] ")"  | 
+          	 * PrimaryExpr ::= "super" "." Id "(" [ ExpressionList ] ")"  |
           	 *                 Id  |
-          	 *                 Id "." Id | 
+          	 *                 Id "." Id |
           	 *                 Id "." Id "(" [ ExpressionList ] ")" |
           	 *                 Id "." Id "." Id "(" [ ExpressionList ] ")" |
-          	 *                 "this" | 
-          	 *                 "this" "." Id | 
-          	 *                 "this" "." Id "(" [ ExpressionList ] ")"  | 
+          	 *                 "this" |
+          	 *                 "this" "." Id |
+          	 *                 "this" "." Id "(" [ ExpressionList ] ")"  |
           	 *                 "this" "." Id "." Id "(" [ ExpressionList ] ")"
 			 */
 		case SUPER:
@@ -914,9 +942,9 @@ public class Compiler {
 			break;
 		case IDENT:
 			/*
-          	 * PrimaryExpr ::=  
+          	 * PrimaryExpr ::=
           	 *                 Id  |
-          	 *                 Id "." Id | 
+          	 *                 Id "." Id |
           	 *                 Id "." Id "(" [ ExpressionList ] ")" |
           	 *                 Id "." Id "." Id "(" [ ExpressionList ] ")" |
 			 */
@@ -926,9 +954,23 @@ public class Compiler {
 			if ( lexer.token != Symbol.DOT ) {
 				// Id
 				// retorne um objeto da ASA que representa um identificador
-				return null;
-			}
-			else { // Id "."
+				if (currentClass.existMethod(firstId)) {
+					signalError.showError("Method called incorrectly: " + firstId);
+				}
+
+				Variable var = symbolTable.getInLocal(firstId);
+
+				if (var == null && currentClass.existInstanceVariable(firstId)) {
+					signalError.showError("Instance variable called incorrectly " + firstId);
+				} else if (var == null) {
+					signalError.showError("Undeclared variable: " + firstId);
+				}
+
+				if (var instanceof InstanceVariable && currentClass.existInstanceVariable(firstId)) {
+					signalError.showError("Instance variable called incorrectly " + firstId);
+				}
+				return new VariableExpr(var);
+			} else { // Id "."
 				lexer.nextToken(); // coma o "."
 				if ( lexer.token != Symbol.IDENT ) {
 					signalError.showError("Identifier expected");
@@ -946,17 +988,65 @@ public class Compiler {
 						 * Contudo, se vari�veis est�ticas n�o estiver nas especifica��es,
 						 * sinalize um erro neste ponto.
 						 */
-						lexer.nextToken();
-						if ( lexer.token != Symbol.IDENT )
-							signalError.showError("Identifier expected");
-						messageName = lexer.getStringValue();
-						lexer.nextToken();
-						exprList = this.realParameters();
+						signalError.showError("'static' variables not supported");
+//						lexer.nextToken();
+//						if ( lexer.token != Symbol.IDENT )
+//							signalError.showError("Identifier expected");
+//						messageName = lexer.getStringValue();
+//						lexer.nextToken();
+//						exprList = this.realParameters();
 
 					}
 					else if ( lexer.token == Symbol.LEFTPAR ) {
 						// Id "." Id "(" [ ExpressionList ] ")"
+						KraClass identClass = symbolTable.getInGlobal(symbolTable.getInLocal(firstId).getType().getName());
+
+						if (currentClass.getName() == identClass.getName()) {
+							if (currentClass.existMethod(id)) {
+								method = currentClass.fetchMethod(id);
+							} else if (method == null) {
+								identClass = identClass.getSuperclass();
+
+								while (identClass != null) {
+									if (identClass.existPublicMethod(id)) {
+										method = identClass.fetchPublicMethod(id);
+										break;
+									} else {
+										identClass = identClass.getSuperclass();
+									}
+								}
+								if (method == null) {
+									signalError.showError("Method: '" + id + "' not found.");
+								}
+							}
+						} else {
+							if (identClass.existPublicMethod(id)) {
+								method = identClass.fetchPublicMethod(id);
+							} else if (method == null) {
+								identClass = identClass.getSuperclass();
+
+								while (identClass != null) {
+									if (identClass.existPublicMethod(id)) {
+										method = identClass.fetchPublicMethod(id);
+										break;
+									}
+									identClass = identClass.getSuperclass();
+								}
+
+								if (method == null) {
+									signalError.showError("Public method: " + id + "not found for class: " + symbolTable.getInLocal(firstId).getType().getName());
+								}
+							}
+						}
 						exprList = this.realParameters();
+						ParamList methodParams = method.getParamList();
+
+						if (exprList.getSize() != methodParams.getSize()) {
+							signalError.showError("Invalid number of parameters");
+						}
+
+						// Copiar do SUPER essa fita aqui... Se funfar né =P
+
 						/*
 						 * para fazer as confer�ncias sem�nticas, procure por
 						 * m�todo 'ident' na classe de 'firstId'
@@ -964,17 +1054,24 @@ public class Compiler {
 					}
 					else {
 						// retorne o objeto da ASA que representa Id "." Id
+						KraClass identClass = symbolTable.getInGlobal(symbolTable.getInLocal(firstId).getType().getName());
+
+						if (identClass.existInstanceVariable(id)) {
+							return new MessageSendToInstance(symbolTable.getInLocal(firstId), identClass.fetchMethod(id));
+						} else {
+							signalError.showError("No instance variable for class: " + identClass.getName());
+						}
 					}
 				}
 			}
 			break;
 		case THIS:
 			/*
-			 * Este 'case THIS:' trata os seguintes casos: 
-          	 * PrimaryExpr ::= 
-          	 *                 "this" | 
-          	 *                 "this" "." Id | 
-          	 *                 "this" "." Id "(" [ ExpressionList ] ")"  | 
+			 * Este 'case THIS:' trata os seguintes casos:
+          	 * PrimaryExpr ::=
+          	 *                 "this" |
+          	 *                 "this" "." Id |
+          	 *                 "this" "." Id "(" [ ExpressionList ] ")"  |
           	 *                 "this" "." Id "." Id "(" [ ExpressionList ] ")"
 			 */
 			lexer.nextToken();

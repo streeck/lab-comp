@@ -108,6 +108,35 @@ public class KraClass extends Type {
      return this.privateMethodList.getVariable(ident);
    }
    // private MethodList publicMethodList, privateMethodList;
+
+   //Procura um metodo na superClasses para receber uma mensagem. Se existir um método com o mesmo nome
+   //Verifica se os parametros são iguais.
+    public boolean findMessage(String messageName) {
+       KraClass aux;
+       aux = this.getSuperclass();
+       do{
+          if (aux.existMethod(messageName)){
+             return true;
+          }else{
+            aux = aux.getSuperclass();
+          }
+       }while(aux != null);
+       return false;
+    }
+    //Retorna true se os parametros
+   public boolean verifyParamMessage(String messageName) {
+      KraClass aux;
+      aux = this.getSuperclass();
+      do{
+         if (aux.existMethod(messageName)){
+            return true;
+         }else{
+            aux = aux.getSuperclass();
+         }
+      }while(aux != null);
+      return false;
+   }
+    // private MethodList publicMethodList, privateMethodList;
    // metodos publicos get e set para obter e iniciar as variaveis acima,
    // entre outros metodos
 }

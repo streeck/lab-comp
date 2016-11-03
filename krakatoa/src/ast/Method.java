@@ -40,4 +40,10 @@ public class Method extends Variable{
     public void setStmtList(StatementList stmtList) {
         this.stmtList = stmtList;
     }
+
+    public boolean hasReturn() {
+        if(stmtList.searchReturn())
+            return true;
+        return false;
+    }
 }

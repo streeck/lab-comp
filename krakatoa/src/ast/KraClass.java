@@ -72,7 +72,11 @@ public class KraClass extends Type {
            return true;
        return false;
    }
-
+   public boolean existMethod(String method) {
+      if( publicMethodList.exist(method) || privateMethodLis.exist(method) )
+         return true;
+      return false;
+   }
    public boolean existInstanceVariable(InstanceVariable v){
        return instanceVariableList.exist(v);
    }

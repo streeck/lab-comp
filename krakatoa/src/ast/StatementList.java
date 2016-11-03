@@ -27,5 +27,11 @@ public class StatementList {
     }
 
 
+    public boolean searchReturn() {
+        for(Statement s: stmtList){
+           if(s instanceof ReturnStatement) return true;
+        }
 
+        return false;
+    }
 }

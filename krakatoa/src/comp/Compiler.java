@@ -35,7 +35,14 @@ public class Compiler {
 			kraClassList.add(classDec());
 			while ( lexer.token == Symbol.CLASS )
 				kraClassList.add(classDec());
-			if ( lexer.token != Symbol.EOF ) {
+
+            int ultimo = kraClassList.size() - 1;
+            KraClass ultimaClasse = kraClassList.get(ultimo);
+            String nome = ultimaClasse.getName();
+            if(!nome.equals("Program"))
+                signalError.showError("The last class must be the Program Class");
+
+            if ( lexer.token != Symbol.EOF ) {
 				signalError.showError("End of file expected");
 			}
 		}
@@ -120,7 +127,7 @@ public class Compiler {
 		 * MethodDec ::= Qualifier Type Id "("[ FormalParamDec ] ")" "{" StatementList "}" 
 		 * Qualifier ::= [ "static" ]  ( "private" | "public" )
 		 */
-		KraClass kraClass, superClass;
+		KraClass kraClass, superClass = null;
         InstanceVariableList variableList = new InstanceVariableList();
         //MethodList methodList = new MethodList();
 		Method method = null;
@@ -151,14 +158,14 @@ public class Compiler {
             //Verifica se a superclasse já foi declarada previamente.
 			//Verifica também se a superclasse tem o mesmo nome que a classe avaliada no momento.
             superClass = symbolTable.getInGlobal(superclassName);
-            if(superClass == null) signalError.showError("Super Class wasn't declared");
-            else if(superclassName.equals(className)) signalError.showError("Super Class has the same name name as the class");
+            if(superClass == null) signalError.showError("SuperClass wasn't declared");
+			else if(superclassName.equals(className)) signalError.showError("Class '"+superclassName+"' is inheriting from itself");
 			else kraClass.setSuperclass(superClass);
 
             lexer.nextToken();
 		}
 		if ( lexer.token != Symbol.LEFTCURBRACKET )
-			signalError.showError("{ expected", true);
+			signalError.showError("'{' expected", true);
 		lexer.nextToken();
 
 		while (lexer.token == Symbol.PRIVATE || lexer.token == Symbol.PUBLIC) {
@@ -190,9 +197,13 @@ public class Compiler {
                 //Verifica se o methodo ja existe na lista
                 //Se nao existir, add. Se existir mostra erro
                 if(!kraClass.existMethod(method)) {
-                    //Da set nos métodos publicos ou privados com base no qualifier
-                    if (publicQualifier) kraClass.addPublicMethod(method);
-                    else kraClass.addPrivateMethod(method);
+                    if(superClass != null) {
+                        if (!superClass.existMethod(method)) {
+                            //Da set nos métodos publicos ou privados com base no qualifier
+                            if (publicQualifier) kraClass.addPublicMethod(method);
+                            else kraClass.addPrivateMethod(method);
+                        }
+                    }
                 }else signalError.showError("Method "+method.getName()+" already declared.");
 
 			}
@@ -202,12 +213,18 @@ public class Compiler {
                 variableList = instanceVarDec(t, name);
 		}
 		if ( lexer.token != Symbol.RIGHTCURBRACKET )
-			signalError.showError("public/private or \"}\" expected");
+			signalError.showError("public/private or \'}\' expected");
 
 		kraClass.setInstanceVariableList(variableList);
 		lexer.nextToken();
 
 		currentClass = kraClass;
+       //Não funciona//
+       /*if(currentClass.getName().equals("Program")){
+            if(!currentClass.existMethod("run"))
+            	signalError.showError("Method 'run' was not found in class 'Program'");
+        }*/
+
 	return kraClass;
 	}
 
@@ -216,8 +233,11 @@ public class Compiler {
         InstanceVariableList variableList = new InstanceVariableList();
 		InstanceVariable v = null;
 		InstanceVariable variable;
+        v = new InstanceVariable(name,type);
+        if(!variableList.exist(v))
+            variableList.addElement(v);
         //Add a variavel na lista de variaveis de instancia
-        variableList.addElement( new InstanceVariable(name,type));
+        //variableList.addElement( new InstanceVariable(name,type));
 
         while (lexer.token == Symbol.COMMA) {
 			lexer.nextToken();
@@ -245,9 +265,23 @@ public class Compiler {
 		 *                StatementList "}"
 		 */
         Method method = new Method(type, name, qualifier);
+        if(currentClass.getName() == "Program")
+            if(method.getName() == "run")
+                if(method.getType() != Type.voidType)
+                    signalError.showError("Method 'run'of class 'Program' must return void");
+
 		lexer.nextToken();
 		if ( lexer.token != Symbol.RIGHTPAR ){
-			method.setParamList(formalParamDec());
+			ParamList p = formalParamDec();
+            //method.setParamList(formalParamDec());
+            //Verifica caso o metodo seja o run, nao pode ter parametro
+		    if(currentClass.getName().equals("Program")) {
+                if (method.getName().equals("run"))
+                    if (p != null)
+                        signalError.showError("Method 'run' of class Program must be parameterless");
+            }
+
+            method.setParamList(p);
 		}
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 
@@ -256,9 +290,16 @@ public class Compiler {
 
 		lexer.nextToken();
 		method.setStmtList(statementList());
+        //Verifica se o metodo, caso seja void, tenha um return.
+        if(method.getType() != Type.voidType){
+            if(!method.hasReturn())
+                signalError.showError("Missing 'return' statement in method '"+method.getName()+"'");
+        }
+
 		if ( lexer.token != Symbol.RIGHTCURBRACKET ) signalError.showError("} expected");
 
 		lexer.nextToken();
+        currentMethod = method;
         return method;
 	}
 
@@ -309,8 +350,12 @@ public class Compiler {
 			break;
 		case IDENT:
 			// # corrija: faca uma busca na TS para buscar a classe
+			KraClass classe = symbolTable.getInGlobal(lexer.getStringValue());
+			if (classe == null)
+				signalError.showError("Classe '"+lexer.getStringValue()+"' nao declarada. (Type)");
 			// IDENT deve ser uma classe.
-			result = null;
+			//result = null;
+			result = Type.undefinedType;
 			break;
 		default:
 			signalError.showError("Type expected");
@@ -434,6 +479,9 @@ public class Compiler {
             else signalError.showError("Variable " + lexer.getStringValue() + "is being redeclared");
 			lexer.nextToken();
 		}
+		if(lexer.token == Symbol.SEMICOLON)
+			lexer.nextToken();
+		else signalError.showError("Missing ';'");
 		return localVariableList;
 	}
 
@@ -487,7 +535,20 @@ public class Compiler {
 			if ( lexer.token == Symbol.ASSIGN ) {
 				lexer.nextToken();
 				right = expr();
-				if ( lexer.token != Symbol.SEMICOLON )
+
+                if(right.getType() == Type.voidType)
+                    signalError.showError("Cant assignment a void call to a variable");
+                if(left.getType() == Type.booleanType && right.getType() == Type.intType)
+                    signalError.showError("'int' cannot be assigned to 'boolean'");
+
+                //Fazer verificacao de tipos compativeis
+
+                // --- se os dois tipos forem iguais
+                    //se eles forem dos tipos basicos ( int, string, boolean) -- OK
+                //Se eles forem classes e forem iguais ok
+                //Se forem classes, mas não forem iguais, verificar se na hierarquia tem uma classe com o mesmo tipo
+                //se a parte esqueda foir uma classe e a segunda eh UndefinedType = ok
+                if ( lexer.token != Symbol.SEMICOLON )
 					signalError.showError("';' expected", true);
 				else
 					lexer.nextToken();

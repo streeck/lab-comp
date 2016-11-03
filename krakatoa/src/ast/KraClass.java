@@ -10,15 +10,15 @@ public class KraClass extends Type {
    private KraClass superclass;
    private InstanceVariableList instanceVariableList;
    private MethodList publicMethodList;
-   private MethodList privateMethodLis;
+   private MethodList privateMethodList;
 
    public KraClass( String name ) {
       super(name);
       publicMethodList = new MethodList();
-      privateMethodLis = new MethodList();
+      privateMethodList = new MethodList();
       instanceVariableList = new InstanceVariableList();
    }
-   
+
    public String getCname() {
       return getName();
    }
@@ -48,7 +48,7 @@ public class KraClass extends Type {
    }
 
    public void addPrivateMethod(Method m){
-      privateMethodLis.addElement(m);
+      privateMethodList.addElement(m);
    }
    public MethodList getPublicMethodList() {
       return publicMethodList;
@@ -59,26 +59,37 @@ public class KraClass extends Type {
    }
 
    public MethodList getPrivateMethodLis() {
-      return privateMethodLis;
+      return privateMethodList;
    }
 
-   public void setPrivateMethodLis(MethodList privateMethodLis) {
-      this.privateMethodLis = privateMethodLis;
+   public void setPrivateMethodLis(MethodList privateMethodList) {
+      this.privateMethodList = privateMethodList;
    }
 
    //Retorna True se o metodo já existir, ou na lista de publico, ou na lista de privados.
    public boolean existMethod(Method method) {
-       if( publicMethodList.exist(method) || privateMethodLis.exist(method) )
+       if( publicMethodList.exist(method) || privateMethodList.exist(method) )
            return true;
        return false;
    }
    public boolean existMethod(String method) {
-      if( publicMethodList.exist(method) || privateMethodLis.exist(method) )
+      if( publicMethodList.exist(method) || privateMethodList.exist(method) )
          return true;
       return false;
    }
    public boolean existInstanceVariable(InstanceVariable v){
        return instanceVariableList.exist(v);
+   }
+   public boolean existInstanceVariable(String v){
+       return instanceVariableList.exist(v);
+   }
+
+   public Method fetchMethod(String ident) {
+     if (this.publicMethodList.exist(ident)) {
+       return this.publicMethodList.getVariable(ident);
+     } else {
+       return this.privateMethodList.getVariable(ident);
+     }
    }
    // private MethodList publicMethodList, privateMethodList;
    // metodos publicos get e set para obter e iniciar as variaveis acima,

@@ -709,6 +709,11 @@ public class Compiler {
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
 		exprList = exprList();
+
+		if(exprList.containsBooleanType()){
+			signalError.showError("Command 'write' does not accept 'boolean' expressions");
+		}
+
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 		lexer.nextToken();
 		if ( lexer.token != Symbol.SEMICOLON )
@@ -903,6 +908,8 @@ public class Compiler {
 			 *      aClass = symbolTable.getInGlobal(className);
 			 *      if ( aClass == null ) ...
 			 */
+			KraClass aClass = symbolTable.getInGlobal(className);
+			if(aClass == null)  signalError.showError("Class '"+className+"' was not declared.");
 
 			lexer.nextToken();
 			if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
@@ -912,7 +919,7 @@ public class Compiler {
 			/*
 			 * return an object representing the creation of an object
 			 */
-			return null;
+			return new ObjectConstructor(aClass);
 			/*
           	 * PrimaryExpr ::= "super" "." Id "(" [ ExpressionList ] ")"  |
           	 *                 Id  |
@@ -934,14 +941,53 @@ public class Compiler {
 				lexer.nextToken();
 			if ( lexer.token != Symbol.IDENT )
 				signalError.showError("Identifier expected");
+			if(currentClass.getSuperclass() == null)
+				signalError.showError("Class '"+currentClass.getName()+"' doesn't have a superclass.");
+
 			messageName = lexer.getStringValue();
 			/*
-			 * para fazer as confer�ncias sem�nticas, procure por 'messageName'
+			 * para fazer as conferencias semanticas, procure por 'messageName'
 			 * na superclasse/superclasse da superclasse etc
+			 *
 			 */
+
 			lexer.nextToken();
 			exprList = realParameters();
-			break;
+			//Retorna a lista de publics methods que tem o mesmo nome que "messageName"
+			Method methodMessage = currentClass.findMessage(messageName);
+			ArrayList<Expr> exprParam = exprList.getExprList();
+			Iterator<Expr> iExpr = exprParam.iterator();
+
+
+			//OQ TA ACONTECENDO?
+			//Vai verificar se os tipos dos parametros são compativeis.
+			Boolean found = true;
+			if(methodMessage != null){
+				ArrayList<Variable> paramList = methodMessage.getParamList().getParamList();
+				Iterator<Variable> iParam = paramList.iterator();
+				if(exprParam.size() == paramList.size()){
+					while (iExpr.hasNext() && iParam.hasNext()){
+						Variable v = iParam.next();
+						Expr e = iExpr.next();
+						if(!is_type_convertable(v.getType(), e.getType())){
+							found = false;
+							break;
+						}
+					}
+				}else found = false;
+			}else found = false;
+
+			if(!found){
+				signalError.showError("Method '"+messageName+"' was not found in superclass '"+currentClass.getSuperclass().getName()+"' or its superclasses");
+			}
+			/*/O metodo "findMessage" procura pela MessageName a partir da super da classe atual
+			//Se achar, retorna o methodo.
+			Method methodMessage = currentClass.findMessage(messageName, exprList);
+			if(methodMessage == null ){
+				signalError.showError("Method '"+messageName+"' was not found in superclass '"+currentClass.getSuperclass().getName()+"' or its superclasses");
+			}*/
+			return new MessageSendToSuper(currentClass, methodMessage, exprList);
+			//break;
 		case IDENT:
 			/*
           	 * PrimaryExpr ::=
@@ -965,7 +1011,7 @@ public class Compiler {
 				if (var == null && currentClass.existInstanceVariable(firstId)) {
 					signalError.showError("Instance variable called incorrectly " + firstId);
 				} else if (var == null) {
-					signalError.showError("Undeclared variable: " + firstId);
+					signalError.showError("Variable '" + firstId+"' was not declared.");
 				}
 
 				if (var instanceof InstanceVariable && currentClass.existInstanceVariable(firstId)) {
@@ -981,13 +1027,14 @@ public class Compiler {
 					// Id "." Id
 					lexer.nextToken();
 					id = lexer.getStringValue();
+					System.out.println("EITA NOIS::::"+id);
 					if ( lexer.token == Symbol.DOT ) {
 						// Id "." Id "." Id "(" [ ExpressionList ] ")"
 						/*
-						 * se o compilador permite vari�veis est�ticas, � poss�vel
-						 * ter esta op��o, como
+						 * se o compilador permite variaveis estaticas, eh possivel
+						 * ter esta opcao, como
 						 *     Clock.currentDay.setDay(12);
-						 * Contudo, se vari�veis est�ticas n�o estiver nas especifica��es,
+						 * Contudo, se variaveis estaticas nao estiver nas especificacoes,
 						 * sinalize um erro neste ponto.
 						 */
 						signalError.showError("'static' variables not supported");

@@ -55,4 +55,15 @@ public class StatementList {
         }
         return null;
     }
+
+    public void genKra(PW pw) {
+        if (!stmtList.isEmpty()) {
+            for (Statement stmt : stmtList) {
+                if (stmt != null) {
+                    stmt.genKra(pw);
+                }
+            }
+        }
+
+    }
 }

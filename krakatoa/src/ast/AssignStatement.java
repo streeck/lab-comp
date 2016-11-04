@@ -20,6 +20,17 @@ public class AssignStatement extends Statement{
 
     }
 
+    @Override
+    public void genKra(PW pw) {
+        pw.printIdent("");
+        this.leftPart.genKra(pw, false);
+        if (rightPart != null) {
+            pw.print(" = ");
+            rightPart.genKra(pw, false);
+        }
+        pw.println(";");
+    }
+
     public Expr getLeftPart() {
         return leftPart;
     }

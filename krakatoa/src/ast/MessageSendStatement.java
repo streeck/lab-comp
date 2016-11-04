@@ -11,6 +11,11 @@ public class MessageSendStatement extends Statement {
       pw.println(";");
    }
 
+   @Override
+   public void genKra(PW pw) {
+
+   }
+
    private MessageSend  messageSend;
 
 }

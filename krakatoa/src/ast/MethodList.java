@@ -53,10 +53,10 @@ public class MethodList {
         return null;
     }
 
-    public void genKra(PW pw, boolean publicMethod) {
+    public void genKra(PW pw) {
         for (Method method : methodList) {
             if (method != null) {
-                method.genKra(pw, false);
+                method.genKra(pw);
             }
         }
     }

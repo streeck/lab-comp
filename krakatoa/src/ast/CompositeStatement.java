@@ -2,9 +2,7 @@
 //Charles David de Moraes 489662
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
+
 public class CompositeStatement extends  Statement {
     private StatementList statementList;
 

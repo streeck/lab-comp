@@ -2,7 +2,6 @@
 //Charles David de Moraes 489662
 package ast;
 
-import com.sun.org.apache.bcel.internal.classfile.LocalVariable;
 
 import java.util.*;
 
@@ -37,5 +36,18 @@ public class LocalVariableList {
             if(v.getName().equals("name")) return v;
         }
         return null;
+    }
+
+    public void genKra(PW pw) {
+        if (!localList.isEmpty()) {
+            for (Variable var : localList) {
+                if (var != null) {
+                    pw.printIdent("");
+                    pw.print(var.getType().getName() + " ");
+                    pw.print(var.getName());
+                    pw.println(";");
+                }
+            }
+        }
     }
 }

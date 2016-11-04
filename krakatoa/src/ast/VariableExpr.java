@@ -11,7 +11,17 @@ public class VariableExpr extends Expr {
     public void genC( PW pw, boolean putParenthesis ) {
         pw.print( v.getName() );
     }
-    
+
+    @Override
+    public void genKra(PW pw, boolean putParenthesis) {
+        if (putParenthesis) {
+            pw.print("(");
+            pw.print(v.getName());
+            pw.print(")");
+        } else
+            pw.print(v.getName());
+    }
+
     public Type getType() {
         return v.getType();
     }

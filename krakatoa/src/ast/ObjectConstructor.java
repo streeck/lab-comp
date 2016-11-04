@@ -16,6 +16,17 @@ public class ObjectConstructor extends Expr{
     }
 
     @Override
+    public void genKra(PW pw, boolean putParenthesis) {
+        // If cast is needed
+        if (castingObj != null && object != null) {
+            if (castingObj.getName() != object.getName()) {
+                pw.print("(" + castingObj.getName() + " ) ");
+            }
+        }
+        pw.print("new " + object.getName() + "()");
+    }
+
+    @Override
     public Type getType() {
         return getObject();
     }

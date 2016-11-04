@@ -4,6 +4,8 @@ package ast;
 
 import lexer.Symbol;
 
+import java.util.Iterator;
+
 public class Method extends Variable{
     private ParamList paramList;
     private Symbol qualifier;
@@ -54,13 +56,12 @@ public class Method extends Variable{
         return stmtList.getVariable(name);
     }
 
-    public void genKra(PW pw, boolean publicMethod) {
-//        if (publicMethod) {
-//            pw.print("public ");
-//        } else {
-//            pw.print("private ");
-//        }
-        pw.print(qualifier);
+    public void genKra(PW pw) {
+        if (qualifier == Symbol.PUBLIC) {
+            pw.printIdent("public ");
+        } else {
+            pw.printIdent("private ");
+        }
         pw.print(this.getType().getName() + " ");
         pw.print(this.getName() + "(");
         if (paramList != null) {
@@ -68,8 +69,13 @@ public class Method extends Variable{
         }
         pw.println(") {");
         pw.add();
-        if (localVariableList != null) {
-            localVariableList.genKra(pw);
+        Iterator<Statement> stmts = stmtList.elements();
+        while (stmts.hasNext()) {
+            Statement stmt = stmts.next();
+            if (stmt instanceof AssignStatement) {
+                LocalVariableList varList = ((AssignStatement) stmt).getVarList();
+                varList.genKra(pw);
+            }
         }
         if (stmtList != null) {
             stmtList.genKra(pw);

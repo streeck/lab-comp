@@ -2,9 +2,7 @@
 //Charles David de Moraes 489662
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
+
 public class IfStatement extends Statement {
     private Statement stmtIf;
     private Statement stmtElse;
@@ -28,6 +26,7 @@ public class IfStatement extends Statement {
         pw.print(") ");
 
         if (stmtIf instanceof CompositeStatement) {
+            pw.print("");
             stmtIf.genKra(pw);
         } else {
             pw.println("");
@@ -39,11 +38,11 @@ public class IfStatement extends Statement {
         }
 
         if (stmtElse != null){
-            pw.printlnIdent("} else {");
+            pw.printlnIdent("else ");
+            pw.println("");
             pw.add();
             stmtElse.genKra(pw);
             pw.sub();
-            pw.printlnIdent("}");
         }
     }
 

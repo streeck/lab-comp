@@ -54,8 +54,6 @@ public class InstanceVariableList {
     public void genKra(PW pw) {
         for (InstanceVariable var : instanceVariableList) {
             var.genKra(pw);
-        }
-        if(!this.instanceVariableList.isEmpty()) {
             pw.println("");
         }
     }

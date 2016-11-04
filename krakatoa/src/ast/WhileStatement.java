@@ -19,10 +19,10 @@ public class WhileStatement extends Statement {
 
     @Override
     public void genKra(PW pw) {
-        pw.print("while (");
+        pw.printIdent("while (");
         expr.genKra(pw, false);
         pw.print(") ");
-
+        pw.println();
         pw.add();
         stmt.genKra(pw);
         pw.sub();

@@ -597,9 +597,9 @@ public class Compiler {
 				if (right.getType() == Type.voidType) {
 					signalError.showError("Varibale cannot be assigned void value.");
 				}
-				// if (!is_type_convertable(left.getType(), right.getType())) {
-				// 	signalError.showError("Incompatible types.");
-				// }
+				if (!is_type_convertable(left.getType(), right.getType())) {
+				 	signalError.showError("Incompatible types.");
+				}
                 if (lexer.token != Symbol.SEMICOLON)
 					signalError.showError("';' expected", true);
 				else
@@ -641,7 +641,10 @@ public class Compiler {
 			return false;
 		}
 	}
-  if (isType(left.getName()) && right== Type.undefinedType) {
+	if (isType(left.getName()) && right == Type.undefinedType) {
+		return true;
+	}
+	if (isType(right.getName()) && left == Type.undefinedType) {
 		return true;
 	}
 	return false;
@@ -853,6 +856,15 @@ public class Compiler {
 		switch(op) {
 			case EQ:
 			case NEQ:
+//				if (left.getType() != Type.stringType && right.getType() != Type.stringType) {
+//					if (!is_type_convertable(left.getType(), right.getType())) {
+//						signalError.showError("Incompatible types cannot be compared with '" + op + "' because the result will always be 'false'");
+//					} else {
+//						if (left.getType() != Type.undefinedType && right.getType() != Type.undefinedType && left.getType() != right.getType()) {
+//							signalError.showError("Incompatible types cannot be compared with '" + op + "' because the result will always be 'false'");
+//						}
+//					}
+//				}
 				boolean testFlag = false;
 				if ((left.getType() == Type.undefinedType && (right.getType() instanceof KraClass)) || right.getType() == Type.undefinedType && (left.getType() instanceof KraClass)) {
 					testFlag = false;

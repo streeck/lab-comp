@@ -214,7 +214,7 @@ public class Compiler {
 			else if ( qualifier != Symbol.PRIVATE )
 				signalError.showError("Attempt to declare a public instance variable");
 			else
-                variableList = instanceVarDec(t, name);
+          instanceVarDec(t, name, variableList);
 		}
 		if ( lexer.token != Symbol.RIGHTCURBRACKET )
 			signalError.showError("public/private or \'}\' expected");
@@ -233,14 +233,16 @@ public class Compiler {
 	return kraClass;
 	}
 
-	private InstanceVariableList instanceVarDec(Type type, String name) {
+	private void instanceVarDec(Type type, String name, InstanceVariableList variableList) {
 		// InstVarDec ::= [ "static" ] "private" Type IdList ";"
-        InstanceVariableList variableList = new InstanceVariableList();
+    // InstanceVariableList variableList = new InstanceVariableList();
 		InstanceVariable v = null;
 		InstanceVariable variable;
-        v = new InstanceVariable(name,type);
-        if(!variableList.exist(v))
-            variableList.addElement(v);
+        v = new InstanceVariable(name, type);
+        if(variableList.exist(v)) {
+			signalError.showError("Variable '" + name + "' is being redeclared");
+		}
+		variableList.addElement(v);
         //Add a variavel na lista de variaveis de instancia
         //variableList.addElement( new InstanceVariable(name,type));
 
@@ -261,7 +263,6 @@ public class Compiler {
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
-        return variableList;
 	}
 
 	private Method methodDec(Type type, String name, Symbol qualifier) {
@@ -461,7 +462,7 @@ public class Compiler {
 		// LocalDec ::= Type IdList ";"
 		LocalVariableList localVariableList = new LocalVariableList();
 		Type type = type();
-		if ( lexer.token != Symbol.IDENT ) signalError.showError("Identifier expected");
+		if ( lexer.token != Symbol.IDENT && !(type instanceof KraClass)) signalError.showError("Identifier expected");
 		Variable v = new Variable(lexer.getStringValue(), type);
         //Add a variavel, caso ela não exista ainda, na tabela local
         Variable aux = symbolTable.putInLocal(lexer.getStringValue(), v);
@@ -486,9 +487,10 @@ public class Compiler {
             else signalError.showError("Variable " + lexer.getStringValue() + "is being redeclared");
 			lexer.nextToken();
 		}
-		if(lexer.token == Symbol.SEMICOLON)
-			lexer.nextToken();
-		else signalError.showError("Missing ';'");
+		if(lexer.token != Symbol.SEMICOLON && !(type instanceof KraClass)) {
+			signalError.showError("Expected ';'");
+		}
+		lexer.nextToken();
 		return localVariableList;
 	}
 

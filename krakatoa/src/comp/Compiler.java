@@ -275,6 +275,16 @@ public class Compiler {
 		} else if (currentClass.existMethod(name)) {
 			signalError.showError("Method '" + name + "' is being redeclared");
 		}
+
+		if (currentClass.getSuperclass() != null) {
+			KraClass superClass = currentClass.getSuperclass();
+			if (superClass.existMethod(name)) {
+				if (superClass.fetchMethod(name).getType() != type) {
+					signalError.showError("Method '" + name + "' of subclass '" + currentClass.getName() + "' has a signature different from method inherited from superclass '" + superClass.getName() + "'");
+				}
+			}
+
+		}
         currentMethod = new Method(type, name, qualifier);
         if(currentClass.getName().equals("Program"))
             if(currentMethod.getName().equals("run"))

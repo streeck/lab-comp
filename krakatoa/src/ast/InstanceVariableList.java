@@ -44,7 +44,7 @@ public class InstanceVariableList {
         //Verifica se a variavel já foi declarada.
         if(!instanceVariableList.isEmpty()){
             for(InstanceVariable aux: instanceVariableList){
-                if(aux.getName() == variable)
+                if(aux.getName().equals(variable))
                     return true;
             }
         }

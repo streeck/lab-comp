@@ -1,8 +1,9 @@
+//Angela Rodrigues Ferreira 552070
+//Charles David de Moraes 489662
+
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
+
 public class AssignStatement extends Statement{
     private Expr leftPart;
     private Expr rightPart;
@@ -18,6 +19,19 @@ public class AssignStatement extends Statement{
     @Override
     public void genC(PW pw) {
 
+    }
+
+    @Override
+    public void genKra(PW pw) {
+        if (leftPart != null) {
+            pw.printIdent("");
+            leftPart.genKra(pw, false);
+            if (rightPart != null) {
+                pw.print(" = ");
+                rightPart.genKra(pw, false);
+            }
+            pw.println(";");
+        }
     }
 
     public Expr getLeftPart() {

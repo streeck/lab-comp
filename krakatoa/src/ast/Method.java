@@ -4,9 +4,8 @@ package ast;
 
 import lexer.Symbol;
 
-/**
- * Created by Angela on 27/10/2016.
- */
+import java.util.Iterator;
+
 public class Method extends Variable{
     private ParamList paramList;
     private Symbol qualifier;
@@ -55,5 +54,33 @@ public class Method extends Variable{
 
     public Variable getVariable(String name) {
         return stmtList.getVariable(name);
+    }
+
+    public void genKra(PW pw) {
+        if (qualifier == Symbol.PUBLIC) {
+            pw.printIdent("public ");
+        } else {
+            pw.printIdent("private ");
+        }
+        pw.print(this.getType().getName() + " ");
+        pw.print(this.getName() + "(");
+        if (paramList != null) {
+            paramList.genKra(pw);
+        }
+        pw.println(") {");
+        pw.add();
+        Iterator<Statement> stmts = stmtList.elements();
+        while (stmts.hasNext()) {
+            Statement stmt = stmts.next();
+            if (stmt instanceof AssignStatement) {
+                LocalVariableList varList = ((AssignStatement) stmt).getVarList();
+                varList.genKra(pw);
+            }
+        }
+        if (stmtList != null) {
+            stmtList.genKra(pw);
+        }
+        pw.sub();
+        pw.printlnIdent("}");
     }
 }

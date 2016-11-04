@@ -25,6 +25,21 @@ public class ExprList {
         }
     }
 
+    public void genKra(PW pw){
+        if (!exprList.isEmpty()) {
+            int size = exprList.size();
+            for (Expr expr : exprList) {
+                if (expr != null) {
+                    expr.genKra(pw, false);
+                    size = size - 1;
+                    if (size > 0) {
+                        pw.print(", ");
+                    }
+                }
+            }
+        }
+    }
+
     public boolean containsBooleanType() {
         for(Expr e: getExprList()){
             if(e.getType() == Type.booleanType)

@@ -1,3 +1,6 @@
+//Angela Rodrigues Ferreira 552070
+//Charles David de Moraes 489662
+
 package ast;
 
 public class LiteralInt extends Expr {
@@ -11,6 +14,11 @@ public class LiteralInt extends Expr {
     }
     public void genC( PW pw, boolean putParenthesis ) {
         pw.printIdent("" + value);
+    }
+
+    @Override
+    public void genKra(PW pw, boolean putParenthesis) {
+        pw.print(String.valueOf(value));
     }
     
     public Type getType() {

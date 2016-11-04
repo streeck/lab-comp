@@ -2,9 +2,7 @@
 //Charles David de Moraes 489662
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
+
 //Colocar um \n no final do genC
 public class WritelnStatement extends Statement{
     private ExprList exprList;
@@ -16,6 +14,13 @@ public class WritelnStatement extends Statement{
     @Override
     public void genC(PW pw) {
 
+    }
+
+    @Override
+    public void genKra(PW pw) {
+        pw.printIdent("writeln(");
+        exprList.genKra(pw);
+        pw.println(");");
     }
 
     public ExprList getExprList() {

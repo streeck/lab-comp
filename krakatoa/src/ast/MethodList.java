@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.MemoryHandler;
 
-/**
- * Created by Angela on 27/10/2016.
- */
 public class MethodList {
     private ArrayList<Method> methodList;
 
@@ -54,5 +51,13 @@ public class MethodList {
         }
       }
         return null;
+    }
+
+    public void genKra(PW pw) {
+        for (Method method : methodList) {
+            if (method != null) {
+                method.genKra(pw);
+            }
+        }
     }
 }

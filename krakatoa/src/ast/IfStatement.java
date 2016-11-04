@@ -2,9 +2,7 @@
 //Charles David de Moraes 489662
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
+
 public class IfStatement extends Statement {
     private Statement stmtIf;
     private Statement stmtElse;
@@ -19,6 +17,30 @@ public class IfStatement extends Statement {
     @Override
     public void genC(PW pw) {
 
+    }
+
+    @Override
+    public void genKra(PW pw) {
+        pw.printIdent("if (");
+        expr.genKra(pw, false);
+        pw.print(") ");
+
+        if (stmtIf instanceof CompositeStatement) {
+            pw.print("");
+            stmtIf.genKra(pw);
+        } else {
+            pw.println("");
+            if (stmtIf != null) {
+                pw.add();
+                stmtIf.genKra(pw);
+                pw.sub();
+            }
+        }
+
+        if (stmtElse != null){
+            pw.printIdent("else ");
+            stmtElse.genKra(pw);
+        }
     }
 
     public Statement getStmtIf() {

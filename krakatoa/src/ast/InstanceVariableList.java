@@ -50,4 +50,11 @@ public class InstanceVariableList {
         }
         return false;
     }
+
+    public void genKra(PW pw) {
+        for (InstanceVariable var : instanceVariableList) {
+            var.genKra(pw);
+            pw.println("");
+        }
+    }
 }

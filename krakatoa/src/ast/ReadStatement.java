@@ -2,9 +2,9 @@
 //Charles David de Moraes 489662
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
+
+import java.util.Iterator;
+
 public class ReadStatement extends Statement{
     private VariableList varList;
 
@@ -14,6 +14,23 @@ public class ReadStatement extends Statement{
     @Override
     public void genC(PW pw) {
 
+    }
+
+    @Override
+    public void genKra(PW pw) {
+        pw.printIdent("read(");
+        int i = varList.getSize();
+        int count = 0;
+        Iterator<Variable> vars = varList.elements();
+        while (vars.hasNext()) {
+            Variable var = vars.next();
+            pw.print(var.getName());
+            if (count != i) {
+                pw.print(", ");
+            }
+            count++;
+        }
+        pw.println(");");
     }
 
     public VariableList getVarList() {

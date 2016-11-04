@@ -1,3 +1,6 @@
+//Angela Rodrigues Ferreira 552070
+//Charles David de Moraes 489662
+
 package ast;
 
 public class MessageSendToInstance extends Expr {
@@ -13,6 +16,11 @@ public class MessageSendToInstance extends Expr {
     @Override
     public void genC(PW pw, boolean putParenthesis) {
         pw.print(var.getName() + "." + instanceVariable.getName());
+    }
+
+    @Override
+    public void genKra(PW pw, boolean putParenthesis) {
+
     }
 
 //    @Override

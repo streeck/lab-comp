@@ -2,13 +2,20 @@
 //Charles David de Moraes 489662
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
+
 public class CompositeStatement extends  Statement {
     private StatementList statementList;
 
     public void genC( PW pw ) {
+    }
+
+    @Override
+    public void genKra(PW pw) {
+        pw.println("{");
+        pw.add();
+        statementList.genKra(pw);
+        pw.sub();
+        pw.printlnIdent("}");
     }
 
     public StatementList getStatementList() {

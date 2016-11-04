@@ -20,6 +20,11 @@ public class StatementAssert extends Statement {
 
 	}
 
+	@Override
+	public void genKra(PW pw) {
+
+	}
+
 	public Expr getExpr() {
 		return expr;
 	}

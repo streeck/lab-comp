@@ -5,9 +5,7 @@ package ast;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- * Created by Angela on 28/10/2016.
- */
+
 public class StatementList {
     private ArrayList<Statement> stmtList;
 
@@ -54,5 +52,15 @@ public class StatementList {
             }
         }
         return null;
+    }
+
+    public void genKra(PW pw) {
+        if (!stmtList.isEmpty()) {
+            for (Statement stmt : stmtList) {
+                if (stmt != null) {
+                    stmt.genKra(pw);
+                }
+            }
+        }
     }
 }

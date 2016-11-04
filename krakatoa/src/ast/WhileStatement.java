@@ -3,9 +3,6 @@
 
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
 public class WhileStatement extends Statement {
     private Expr expr;
     private Statement stmt;
@@ -18,5 +15,16 @@ public class WhileStatement extends Statement {
     @Override
     public void genC(PW pw) {
 
+    }
+
+    @Override
+    public void genKra(PW pw) {
+        pw.printIdent("while (");
+        expr.genKra(pw, false);
+        pw.print(") ");
+        pw.println();
+        pw.add();
+        stmt.genKra(pw);
+        pw.sub();
     }
 }

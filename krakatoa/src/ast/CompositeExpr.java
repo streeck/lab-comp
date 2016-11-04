@@ -31,6 +31,26 @@ public class CompositeExpr extends Expr {
     }
 
     @Override
+    public void genKra(PW pw, boolean putParenthesis) {
+        if (putParenthesis) {
+            pw.print("(");
+        }
+        left.genKra(pw, false);
+
+        String strSymbol = arrayOper.get(oper);
+        if (strSymbol == null) {
+            pw.println("internal error in CompositeExpr::genKra");
+        } else {
+            pw.print(" " + strSymbol + " ");
+        }
+        right.genKra(pw, true);
+
+        if (putParenthesis) {
+            pw.print(")");
+        }
+    }
+
+    @Override
 	public Type getType() {
           // left and right must be the same type
        if ( oper == Symbol.EQ || oper == Symbol.NEQ || oper == Symbol.LE || oper == Symbol.LT ||

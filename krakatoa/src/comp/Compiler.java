@@ -3,6 +3,8 @@ package comp;
 
 import ast.*;
 import lexer.*;
+import org.omg.CORBA.portable.ValueInputStream;
+
 import java.io.*;
 import java.util.*;
 
@@ -194,7 +196,7 @@ public class Compiler {
 			String name = lexer.getStringValue();
 			lexer.nextToken();
 			if ( lexer.token == Symbol.LEFTPAR ){
-				method  = methodDec(t, name, qualifier);
+				method  = methodDec(t, name, qualifier, variableList);
                 //Verifica se o methodo ja existe na lista
                 //Se nao existir, add. Se existir mostra erro
                 if(!kraClass.existMethod(method)) {
@@ -204,7 +206,7 @@ public class Compiler {
                             if (publicQualifier) kraClass.addPublicMethod(method);
                             else kraClass.addPrivateMethod(method);
                         }
-                    }else{
+                    } else {
                         if (publicQualifier) kraClass.addPublicMethod(method);
                         else kraClass.addPrivateMethod(method);
                     }
@@ -265,16 +267,24 @@ public class Compiler {
 		lexer.nextToken();
 	}
 
-	private Method methodDec(Type type, String name, Symbol qualifier) {
+	private Method methodDec(Type type, String name, Symbol qualifier, InstanceVariableList variableList) {
 		/*
 		 * MethodDec ::= Qualifier Return Id "("[ FormalParamDec ] ")" "{"
 		 *                StatementList "}"
 		 */
+		if (variableList.exist(name)) {
+			signalError.showError("Method '" + name + "' has name equal to an instance variable");
+		} else if (currentClass.existMethod(name)) {
+			signalError.showError("Method '" + name + "' is being redeclared");
+		}
         currentMethod = new Method(type, name, qualifier);
         if(currentClass.getName().equals("Program"))
-            if(currentMethod.getName().equals("run"))
-                if(currentMethod.getType() != Type.voidType)
-                    signalError.showError("Method 'run'of class 'Program' must return void");
+            if(currentMethod.getName().equals("run")) {
+				if(currentMethod.getType() != Type.voidType)
+					signalError.showError("Method 'run'of class 'Program' must return void");
+				if (currentMethod.getQualifier() == Symbol.PRIVATE)
+					signalError.showError("Method 'run' of class 'Program' cannot be private");
+			}
 
 		lexer.nextToken();
 		if ( lexer.token != Symbol.RIGHTPAR ){
@@ -282,12 +292,35 @@ public class Compiler {
             //method.setParamList(formalParamDec());
             //Verifica caso o metodo seja o run, nao pode ter parametro
 		    if(currentClass.getName().equals("Program")) {
-                if (currentMethod.getName().equals("run"))
-                    if (p != null)
-                        signalError.showError("Method 'run' of class Program must be parameterless");
+                if (currentMethod.getName().equals("run")) {
+					if (p != null) {
+						signalError.showError("Method 'run' of class Program must be parameterless");
+					}
+				}
             }
 
 			currentMethod.setParamList(p);
+		}
+
+		if (currentClass.getSuperclass() != null) {
+			KraClass superClass = currentClass.getSuperclass();
+			if (superClass.existMethod(name)) {
+				if (superClass.fetchMethod(name).getType() != type) {
+					signalError.showError("Method '" + name + "' of subclass '" + currentClass.getName() + "' has a signature different from method inherited from superclass '" + superClass.getName() + "'");
+				} else {
+					Iterator<Variable> currentParams = currentMethod.getParamList().elements();
+					Iterator<Variable> superClassParams = superClass.fetchMethod(name).getParamList().elements();
+
+					while (currentParams.hasNext() && superClassParams.hasNext()) {
+						Variable paramSon = currentParams.next();
+						Variable paramDad = superClassParams.next();
+
+						if (paramSon.getType() != paramDad.getType()) {
+							signalError.showError("Method '" + name + "' is being redefined in subclass '" + currentClass.getName() + "' with a signature diferent from the method of superclass '" + superClass.getName() + "'");
+						}
+					}
+				}
+			}
 		}
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 
@@ -297,7 +330,7 @@ public class Compiler {
 		lexer.nextToken();
 		currentMethod.setStmtList(statementList());
         //Verifica se o metodo, caso seja void, tenha um return.
-        if(currentMethod.getType() != Type.voidType){
+        if(currentMethod.getType() != Type.voidType) {
             if(!currentMethod.hasReturn())
                 signalError.showError("Missing 'return' statement in method '"+currentMethod.getName()+"'");
         }
@@ -584,7 +617,8 @@ public class Compiler {
 			}
 			return false;
 		}
-	} else if (isType(left.getName()) && right== Type.undefinedType) {
+	}
+  if (isType(left.getName()) && right== Type.undefinedType) {
 		return true;
 	}
 	return false;
@@ -602,6 +636,9 @@ public class Compiler {
 	}
 
 	private WhileStatement whileStatement() {
+
+		WhileStack.push(1);
+
         Expr e;
         Statement stmt;
 		lexer.nextToken();
@@ -616,6 +653,7 @@ public class Compiler {
 		lexer.nextToken();
 		stmt = statement();
 
+		WhileStack.pop();
         return new WhileStatement(e,stmt);
 	}
 
@@ -646,6 +684,14 @@ public class Compiler {
 		e = expr();
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
+
+		if (currentMethod.getType() == Type.voidType) {
+			signalError.showError("Illegal 'return' statement. Method returns 'void'");
+		}
+
+		if (!is_type_convertable(currentMethod.getType(), e.getType())) {
+			signalError.showError("Type error: type of the expression returned is not subclass of the method return type");
+		}
 		lexer.nextToken();
 
         return new ReturnStatement(e);
@@ -704,14 +750,16 @@ public class Compiler {
 	}
 
 	private WriteStatement writeStatement() {
-        ExprList exprList;
+		ExprList exprList;
 		lexer.nextToken();
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
 		exprList = exprList();
 
-		if(exprList.containsBooleanType()){
-			signalError.showError("Command 'write' does not accept 'boolean' expressions");
+		for (Expr expression : exprList.getExprList()) {
+			if (expression.getType() == Type.booleanType) {
+				signalError.showError("Command 'write' does not accept 'boolean' expressions");
+			}
 		}
 
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
@@ -739,6 +787,10 @@ public class Compiler {
 	private BreakStatement breakStatement() {
         BreakStatement breakstmt = new BreakStatement();
 		lexer.nextToken();
+
+		if (WhileStack.empty()) {
+			signalError.showError("'break' statement found outside a 'while' statement");
+		}
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
@@ -1196,4 +1248,5 @@ public class Compiler {
 	private ErrorSignaller	signalError;
 	private KraClass 		currentClass;
 	private Method          currentMethod;
+	private Stack 			WhileStack = new Stack();
 }

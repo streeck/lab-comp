@@ -652,6 +652,7 @@ public class Compiler {
 		lexer.nextToken();
 		stmt = statement();
 
+		WhileStack.pop();
         return new WhileStatement(e,stmt);
 	}
 
@@ -682,6 +683,10 @@ public class Compiler {
 		e = expr();
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
+
+		if (currentMethod.getType() == Type.voidType) {
+			signalError.showError("Illegal 'return' statement. Method returns 'void'");
+		}
 		lexer.nextToken();
 
         return new ReturnStatement(e);

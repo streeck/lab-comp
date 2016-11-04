@@ -7,21 +7,28 @@ import java.util.*;
 public class ParamList {
 
     public ParamList() {
-       paramList = new ArrayList<Variable>();
+       setParamList(new ArrayList<Variable>());
     }
 
     public void addElement(Variable v) {
-       paramList.add(v);
+       getParamList().add(v);
     }
 
     public Iterator<Variable> elements() {
-        return paramList.iterator();
+        return getParamList().iterator();
     }
 
     public int getSize() {
-        return paramList.size();
+        return getParamList().size();
     }
 
     private ArrayList<Variable> paramList;
 
+    public ArrayList<Variable> getParamList() {
+        return paramList;
+    }
+
+    public void setParamList(ArrayList<Variable> paramList) {
+        this.paramList = paramList;
+    }
 }

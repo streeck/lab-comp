@@ -1,6 +1,9 @@
 //Angela Rodrigues Ferreira 552070
 //Charles David de Moraes 489662
 package ast;
+
+import java.util.ArrayList;
+
 /*
  * Krakatoa Class
  */
@@ -110,20 +113,41 @@ public class KraClass extends Type {
    // private MethodList publicMethodList, privateMethodList;
 
    //Procura um metodo na superClasses para receber uma mensagem. Se existir um método com o mesmo nome
-   //Verifica se os parametros são iguais.
-    public boolean findMessage(String messageName) {
+   //Verifica se os parametros são iguais (tipos iguais na mesma ordem)
+    //Retorna o Method
+    public Method findMessage(String messageName, ExprList exprList) {
        KraClass aux;
+        Method m = null;
        aux = this.getSuperclass();
-       do{
-          if (aux.existMethod(messageName)){
-             return true;
-          }else{
-            aux = aux.getSuperclass();
-          }
+       do {
+           if (aux.existMethod(messageName)) {
+               m = aux.fetchMethod(messageName);
+               Boolean found = false;
+               ArrayList<Expr> eList = exprList.getExprList();
+               ArrayList<Variable> pList = m.getParamList().getParamList();
+               //Verifica se a qtd de paramentros são iguais
+               if (eList.size() == pList.size()){
+                   for (Expr e : eList) {
+                       if (found == true) break;
+                       //Procura uma variavel na lista de parametros do metodo
+                       for (Variable v : pList) {
+                           if (e.getType() == v.getType()) {
+                               found = true;
+                               break;
+                           }
+                       }
+                   }
+               }else found = false;
+               if(found)
+                   return m;
+
+           }else{
+               aux = aux.getSuperclass();
+           }
        }while(aux != null);
-       return false;
+       return null;
     }
-    //Retorna true se os parametros
+    /*/Retorna true se os parametros
    public boolean verifyParamMessage(String messageName) {
       KraClass aux;
       aux = this.getSuperclass();
@@ -135,8 +159,7 @@ public class KraClass extends Type {
          }
       }while(aux != null);
       return false;
-   }
+   }*/
     // private MethodList publicMethodList, privateMethodList;
-   // metodos publicos get e set para obter e iniciar as variaveis acima,
    // entre outros metodos
 }

@@ -110,9 +110,29 @@ public class KraClass extends Type {
    public Method fetchPrivateMethod(String ident) {
      return this.privateMethodList.getVariable(ident);
    }
-   // private MethodList publicMethodList, privateMethodList;
 
-   //Procura um metodo na superClasses para receber uma mensagem. Se existir um método com o mesmo nome
+
+    //Procura um metodo na superClasses para receber uma mensagem. Se existir um método com o mesmo nome
+   //Verifica se os parametros são iguais (tipos iguais na mesma ordem)
+    //Retorna o Method
+    public Method findMessage(String messageName) {
+        KraClass aux;
+        Method m = null;
+        ArrayList<Method> listMethod = new ArrayList<Method>();
+        aux = this.getSuperclass();
+       do {
+           if (aux.existPublicMethod(messageName)) {
+               m = aux.fetchPublicMethod(messageName);
+              return m;
+           }else{
+               aux = aux.getSuperclass();
+           }
+       }while(aux != null);
+       return null;
+    }
+
+
+   /*/Procura um metodo na superClasses para receber uma mensagem. Se existir um método com o mesmo nome
    //Verifica se os parametros são iguais (tipos iguais na mesma ordem)
     //Retorna o Method
     public Method findMessage(String messageName, ExprList exprList) {
@@ -120,8 +140,8 @@ public class KraClass extends Type {
         Method m = null;
        aux = this.getSuperclass();
        do {
-           if (aux.existMethod(messageName)) {
-               m = aux.fetchMethod(messageName);
+           if (aux.existPublicMethod(messageName)) {
+               m = aux.fetchPublicMethod(messageName);
                Boolean found = false;
                ArrayList<Expr> eList = exprList.getExprList();
                ArrayList<Variable> pList = m.getParamList().getParamList();
@@ -146,7 +166,7 @@ public class KraClass extends Type {
            }
        }while(aux != null);
        return null;
-    }
+    }/**/
     /*/Retorna true se os parametros
    public boolean verifyParamMessage(String messageName) {
       KraClass aux;
@@ -160,6 +180,4 @@ public class KraClass extends Type {
       }while(aux != null);
       return false;
    }*/
-    // private MethodList publicMethodList, privateMethodList;
-   // entre outros metodos
 }

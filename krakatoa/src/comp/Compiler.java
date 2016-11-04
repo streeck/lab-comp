@@ -617,7 +617,8 @@ public class Compiler {
 			}
 			return false;
 		}
-	} else if (isType(left.getName()) && right== Type.undefinedType) {
+	}
+  if (isType(left.getName()) && right== Type.undefinedType) {
 		return true;
 	}
 	return false;
@@ -635,6 +636,9 @@ public class Compiler {
 	}
 
 	private WhileStatement whileStatement() {
+
+		WhileStack.push(1);
+
         Expr e;
         Statement stmt;
 		lexer.nextToken();
@@ -649,6 +653,7 @@ public class Compiler {
 		lexer.nextToken();
 		stmt = statement();
 
+		WhileStack.pop();
         return new WhileStatement(e,stmt);
 	}
 
@@ -679,6 +684,14 @@ public class Compiler {
 		e = expr();
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
+
+		if (currentMethod.getType() == Type.voidType) {
+			signalError.showError("Illegal 'return' statement. Method returns 'void'");
+		}
+
+		if (!is_type_convertable(currentMethod.getType(), e.getType())) {
+			signalError.showError("Type error: type of the expression returned is not subclass of the method return type");
+		}
 		lexer.nextToken();
 
         return new ReturnStatement(e);
@@ -737,11 +750,18 @@ public class Compiler {
 	}
 
 	private WriteStatement writeStatement() {
-        ExprList exprList;
+		ExprList exprList;
 		lexer.nextToken();
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
 		exprList = exprList();
+
+		for (Expr expression : exprList.getExprList()) {
+			if (expression.getType() == Type.booleanType) {
+				signalError.showError("Command 'write' does not accept 'boolean' expressions");
+			}
+		}
+
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 		lexer.nextToken();
 		if ( lexer.token != Symbol.SEMICOLON )
@@ -767,6 +787,10 @@ public class Compiler {
 	private BreakStatement breakStatement() {
         BreakStatement breakstmt = new BreakStatement();
 		lexer.nextToken();
+
+		if (WhileStack.empty()) {
+			signalError.showError("'break' statement found outside a 'while' statement");
+		}
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
@@ -1182,4 +1206,5 @@ public class Compiler {
 	private ErrorSignaller	signalError;
 	private KraClass 		currentClass;
 	private Method          currentMethod;
+	private Stack 			WhileStack = new Stack();
 }

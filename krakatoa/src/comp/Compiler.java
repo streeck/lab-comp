@@ -760,6 +760,9 @@ public class Compiler {
 			if (expression.getType() == Type.booleanType) {
 				signalError.showError("Command 'write' does not accept 'boolean' expressions");
 			}
+			if (expression.getType() != Type.intType && expression.getType() != Type.stringType) {
+				signalError.showError("Command 'write' does not accept objects");
+			}
 		}
 
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
@@ -823,6 +826,24 @@ public class Compiler {
 				|| op == Symbol.LT || op == Symbol.GE || op == Symbol.GT ) {
 			lexer.nextToken();
 			Expr right = simpleExpr();
+
+		switch(op) {
+			case EQ:
+			case NEQ:
+				boolean testFlag = false;
+				if ((left.getType() == Type.undefinedType && (right.getType() instanceof KraClass)) || right.getType() == Type.undefinedType && (left.getType() instanceof KraClass)) {
+					testFlag = false;
+				} else if (is_type_convertable(left.getType(), right.getType()) && is_type_convertable(right.getType(), left.getType())) {
+					testFlag = false;
+				} else if ((left.getType() == Type.stringType && right.getType() == Type.undefinedType) || (right.getType() == Type.stringType && left.getType() == Type.undefinedType)) {
+					testFlag = false;
+				} else if ((left.getType() == Type.stringType && !(right.getType() instanceof KraClass)) || (right.getType() == Type.stringType && !(left.getType() instanceof KraClass))) {
+					testFlag = false;
+				} else {
+					signalError.showError("Incompatible types cannot be compared with '" + op + "' because the result will always be 'false'");
+				}
+			break;
+      }
 			left = new CompositeExpr(left, op, right);
 		}
 		return left;

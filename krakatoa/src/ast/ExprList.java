@@ -8,17 +8,17 @@ public class ExprList {
     private ArrayList<Expr> exprList;
 
     public ExprList() {
-        exprList = new ArrayList<Expr>();
+        setExprList(new ArrayList<Expr>());
     }
 
     public void addElement( Expr expr ) {
-        exprList.add(expr);
+        getExprList().add(expr);
     }
 
     public void genC( PW pw ) {
 
-        int size = exprList.size();
-        for ( Expr e : exprList ) {
+        int size = getExprList().size();
+        for ( Expr e : getExprList()) {
         	e.genC(pw, false);
             if ( --size > 0 )
                 pw.print(", ");
@@ -26,7 +26,7 @@ public class ExprList {
     }
 
     public boolean containsBooleanType() {
-        for(Expr e: exprList){
+        for(Expr e: getExprList()){
             if(e.getType() == Type.booleanType)
                 return true;
         }
@@ -34,6 +34,14 @@ public class ExprList {
     }
 
     public int getSize() {
-      return exprList.size();
+      return getExprList().size();
+    }
+
+    public ArrayList<Expr> getExprList() {
+        return exprList;
+    }
+
+    public void setExprList(ArrayList<Expr> exprList) {
+        this.exprList = exprList;
     }
 }

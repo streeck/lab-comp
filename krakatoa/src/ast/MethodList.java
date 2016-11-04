@@ -39,13 +39,20 @@ public class MethodList {
     }
 
     public boolean exist(String name){
-        //if(!methodList.isEmpty()){
             for(Method m : methodList){
                 if(m.getName().equals(name)){
                     return true;
                 }
             }
-        //}
         return false;
+    }
+
+    public Method getVariable(String name) {
+      for (Method m : methodList) {
+        if (m.getName().equals(name)) {
+          return m;
+        }
+      }
+        return null;
     }
 }

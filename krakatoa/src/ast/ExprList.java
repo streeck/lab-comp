@@ -5,25 +5,47 @@ package ast;
 import java.util.*;
 
 public class ExprList {
+    private ArrayList<Expr> exprList;
 
     public ExprList() {
-        exprList = new ArrayList<Expr>();
+        setExprList(new ArrayList<Expr>());
     }
 
     public void addElement( Expr expr ) {
-        exprList.add(expr);
+        getExprList().add(expr);
     }
 
     public void genC( PW pw ) {
 
-        int size = exprList.size();
-        for ( Expr e : exprList ) {
+        int size = getExprList().size();
+        for ( Expr e : getExprList()) {
         	e.genC(pw, false);
             if ( --size > 0 )
                 pw.print(", ");
         }
     }
 
-    private ArrayList<Expr> exprList;
+    public boolean containsBooleanType() {
+        for(Expr e: getExprList()){
+            if(e.getType() == Type.booleanType)
+                return true;
+        }
+        return false;
+    }
+
+    public int getSize() {
+      return getExprList().size();
+    }
+
+    public ArrayList<Expr> getExprList() {
+        return exprList;
+    }
+
+    public void setExprList(ArrayList<Expr> exprList) {
+        this.exprList = exprList;
+    }
+    public Iterator<Expr> elements() {
+        return getExprList().iterator();
+    }
 
 }

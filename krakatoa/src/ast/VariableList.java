@@ -5,9 +5,6 @@ package ast;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- * Created by Angela on 28/10/2016.
- */
 public class VariableList {
     private ArrayList<Variable> varList;
 

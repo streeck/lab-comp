@@ -3,6 +3,8 @@ package comp;
 
 import ast.*;
 import lexer.*;
+import org.omg.CORBA.portable.ValueInputStream;
+
 import java.io.*;
 import java.util.*;
 
@@ -275,16 +277,6 @@ public class Compiler {
 		} else if (currentClass.existMethod(name)) {
 			signalError.showError("Method '" + name + "' is being redeclared");
 		}
-
-		if (currentClass.getSuperclass() != null) {
-			KraClass superClass = currentClass.getSuperclass();
-			if (superClass.existMethod(name)) {
-				if (superClass.fetchMethod(name).getType() != type) {
-					signalError.showError("Method '" + name + "' of subclass '" + currentClass.getName() + "' has a signature different from method inherited from superclass '" + superClass.getName() + "'");
-				}
-			}
-
-		}
         currentMethod = new Method(type, name, qualifier);
         if(currentClass.getName().equals("Program"))
             if(currentMethod.getName().equals("run"))
@@ -303,6 +295,27 @@ public class Compiler {
             }
 
 			currentMethod.setParamList(p);
+		}
+
+		if (currentClass.getSuperclass() != null) {
+			KraClass superClass = currentClass.getSuperclass();
+			if (superClass.existMethod(name)) {
+				if (superClass.fetchMethod(name).getType() != type) {
+					signalError.showError("Method '" + name + "' of subclass '" + currentClass.getName() + "' has a signature different from method inherited from superclass '" + superClass.getName() + "'");
+				} else {
+					Iterator<Variable> currentParams = currentMethod.getParamList().elements();
+					Iterator<Variable> superClassParams = superClass.fetchMethod(name).getParamList().elements();
+
+					while (currentParams.hasNext() && superClassParams.hasNext()) {
+						Variable paramSon = currentParams.next();
+						Variable paramDad = superClassParams.next();
+
+						if (paramSon.getType() != paramDad.getType()) {
+							signalError.showError("Method '" + name + "' is being redefined in subclass '" + currentClass.getName() + "' with a signature diferent from the method of superclass '" + superClass.getName() + "'");
+						}
+					}
+				}
+			}
 		}
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 

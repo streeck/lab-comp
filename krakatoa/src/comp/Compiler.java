@@ -279,9 +279,12 @@ public class Compiler {
 		}
         currentMethod = new Method(type, name, qualifier);
         if(currentClass.getName().equals("Program"))
-            if(currentMethod.getName().equals("run"))
-                if(currentMethod.getType() != Type.voidType)
-                    signalError.showError("Method 'run'of class 'Program' must return void");
+            if(currentMethod.getName().equals("run")) {
+				if(currentMethod.getType() != Type.voidType)
+					signalError.showError("Method 'run'of class 'Program' must return void");
+				if (currentMethod.getQualifier() == Symbol.PRIVATE)
+					signalError.showError("Method 'run' of class 'Program' cannot be private");
+			}
 
 		lexer.nextToken();
 		if ( lexer.token != Symbol.RIGHTPAR ){
@@ -289,9 +292,11 @@ public class Compiler {
             //method.setParamList(formalParamDec());
             //Verifica caso o metodo seja o run, nao pode ter parametro
 		    if(currentClass.getName().equals("Program")) {
-                if (currentMethod.getName().equals("run"))
-                    if (p != null)
-                        signalError.showError("Method 'run' of class Program must be parameterless");
+                if (currentMethod.getName().equals("run")) {
+					if (p != null) {
+						signalError.showError("Method 'run' of class Program must be parameterless");
+					}
+				}
             }
 
 			currentMethod.setParamList(p);

@@ -745,11 +745,18 @@ public class Compiler {
 	}
 
 	private WriteStatement writeStatement() {
-        ExprList exprList;
+		ExprList exprList;
 		lexer.nextToken();
 		if ( lexer.token != Symbol.LEFTPAR ) signalError.showError("( expected");
 		lexer.nextToken();
 		exprList = exprList();
+
+		for (Expr expression : exprList.getExprList()) {
+			if (expression.getType() == Type.booleanType) {
+				signalError.showError("Command 'write' does not accept 'boolean' expressions");
+			}
+		}
+
 		if ( lexer.token != Symbol.RIGHTPAR ) signalError.showError(") expected");
 		lexer.nextToken();
 		if ( lexer.token != Symbol.SEMICOLON )

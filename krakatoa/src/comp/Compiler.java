@@ -491,15 +491,21 @@ public class Compiler {
 		return new StatementAssert(e, lineNumber, message);
 	}
 
-	private LocalVariableList localDec() {
+	private void localDec(LocalVariableList localVariableList ) {
+		//System.out.println("ENTREI NO LOCAL DEC");
 		// LocalDec ::= Type IdList ";"
-		LocalVariableList localVariableList = new LocalVariableList();
+		//LocalVariableList localVariableList = new LocalVariableList();
 		Type type = type();
-		if ( lexer.token != Symbol.IDENT && !(type instanceof KraClass)) signalError.showError("Identifier expected");
+		//System.out.println(type.getName());
+
+		if ( lexer.token != Symbol.IDENT && !(type instanceof KraClass)){
+			signalError.showError("Identifier expected");
+		}
 		Variable v = new Variable(lexer.getStringValue(), type);
         //Add a variavel, caso ela não exista ainda, na tabela local
         Variable aux = symbolTable.putInLocal(lexer.getStringValue(), v);
-        //Verifica se ela já existia
+
+		//Verifica se ela já existia
         if(aux == null) localVariableList.addElement(v);
         else signalError.showError("Variable " + lexer.getStringValue() + "is being redeclared");
 
@@ -509,6 +515,7 @@ public class Compiler {
 			lexer.nextToken();
 			if ( lexer.token != Symbol.IDENT )
 				signalError.showError("Identifier expected");
+
 			v = new Variable(lexer.getStringValue(), type);
             //Add a variavel, caso ela não exista ainda, na tabela local
             aux = symbolTable.getInLocal(lexer.getStringValue());
@@ -524,8 +531,9 @@ public class Compiler {
 			signalError.showError("Expected ';'");
 		}
 		lexer.nextToken();
-		return localVariableList;
+		//return localVariableList;
 	}
+
 
 	private CompositeStatement compositeStatement() {
 		lexer.nextToken();
@@ -553,23 +561,30 @@ public class Compiler {
     //Se for a parte de expressao, a var List vai estar null
     //Fazer verificacao quando for gerar codigo
 	private AssignStatement assignExprLocalDec() {
-        LocalVariableList varList = null;
+		//System.out.println("Entrei no ASSIGN...");
+        LocalVariableList varList = new LocalVariableList();
         Expr left = null;
         Expr right = null;
+
+		//System.out.println("TOKEN::: "+ lexer.token);
+		// token é uma classe declarada textualmente antes desta
+		// instrução
 		if ( lexer.token == Symbol.INT || lexer.token == Symbol.BOOLEAN
 				|| lexer.token == Symbol.STRING ||
-				// token é uma classe declarada textualmente antes desta
-				// instrução
-				(lexer.token == Symbol.IDENT && isType(lexer.getStringValue())) ) {
+				(lexer.token == Symbol.IDENT && isType(lexer.getStringValue()) ) ){
 			/*
 			 * uma declaração de variável. 'lexer.token' é o tipo da variável
 			 *
 			 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ] | LocalDec
 			 * LocalDec ::= Type IdList ``;''
 			 */
-			varList = localDec();
+			localDec(varList);
 		}
 		else {
+			String typeName = null;
+			if(lexer.token == Symbol.IDENT){
+				typeName = lexer.getStringValue();
+			}
 			/*
 			 * AssignExprLocalDec ::= Expression [ ``$=$'' Expression ]
 			 */
@@ -592,7 +607,15 @@ public class Compiler {
 			}
 //			se der merda:
 //			adicione: else signalError.showError("Statement expected");
+			else if(lexer.token == Symbol.IDENT ){
+			//else if(typeName != null){
+				if(!isType(typeName)){
+					signalError.showError("Type '"+typeName+"' was not found");
+				}
+			}
+
 		}
+
 		return new AssignStatement(varList,left, right);
 	}
 

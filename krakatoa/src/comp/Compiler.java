@@ -582,9 +582,9 @@ public class Compiler {
 				if (right.getType() == Type.voidType) {
 					signalError.showError("Varibale cannot be assigned void value.");
 				}
-				if (!is_type_convertable(left.getType(), right.getType())) {
-					signalError.showError("Incompatible types.");
-				}
+				// if (!is_type_convertable(left.getType(), right.getType())) {
+				// 	signalError.showError("Incompatible types.");
+				// }
                 if (lexer.token != Symbol.SEMICOLON)
 					signalError.showError("';' expected", true);
 				else
@@ -1054,21 +1054,21 @@ public class Compiler {
 			if ( lexer.token != Symbol.DOT ) {
 				// Id
 				// retorne um objeto da ASA que representa um identificador
-				if (currentClass.existMethod(firstId)) {
-					signalError.showError("Method called incorrectly: " + firstId);
-				}
+				// if (currentClass.existMethod(firstId)) {
+				// 	signalError.showError("Method called incorrectly: " + firstId);
+				// }
 
 				Variable var = symbolTable.getInLocal(firstId);
 
-				if (var == null && currentClass.existInstanceVariable(firstId)) {
-					signalError.showError("Instance variable called incorrectly " + firstId);
-				} else if (var == null) {
-					signalError.showError("Variable '" + firstId+"' was not declared.");
-				}
+				// if (var == null && currentClass.existInstanceVariable(firstId)) {
+				// 	signalError.showError("Instance variable called incorrectly " + firstId);
+				// } else if (var == null) {
+				// 	signalError.showError("Variable '" + firstId+"' was not declared.");
+				// }
 
-				if (var instanceof InstanceVariable && currentClass.existInstanceVariable(firstId)) {
-					signalError.showError("Instance variable called incorrectly " + firstId);
-				}
+				// if (var instanceof InstanceVariable && currentClass.existInstanceVariable(firstId)) {
+				// 	signalError.showError("Instance variable called incorrectly " + firstId);
+				// }
 				return new VariableExpr(var);
 			} else { // Id "."
 				lexer.nextToken(); // coma o "."
@@ -1079,7 +1079,6 @@ public class Compiler {
 					// Id "." Id
 					lexer.nextToken();
 					id = lexer.getStringValue();
-					System.out.println("EITA NOIS::::"+id);
 					if ( lexer.token == Symbol.DOT ) {
 						// Id "." Id "." Id "(" [ ExpressionList ] ")"
 						/*
@@ -1135,16 +1134,16 @@ public class Compiler {
 								}
 
 								if (method == null) {
-									signalError.showError("Public method: " + id + "not found for class: " + symbolTable.getInLocal(firstId).getType().getName());
+									// signalError.showError("Public method: " + id + "not found for class: " + symbolTable.getInLocal(firstId).getType().getName());
 								}
 							}
 						}
 						exprList = this.realParameters();
 						ParamList methodParams = method.getParamList();
 
-						if (exprList.getSize() != methodParams.getSize()) {
-							signalError.showError("Invalid number of parameters");
-						}
+						// if (exprList.getSize() != methodParams.getSize()) {
+						// 	signalError.showError("Invalid number of parameters");
+						// }
 
 						// Copiar do SUPER essa fita aqui... Se funfar né =P
 
@@ -1160,7 +1159,7 @@ public class Compiler {
 						if (identClass.existInstanceVariable(id)) {
 							return new MessageSendToInstance(symbolTable.getInLocal(firstId), identClass.fetchMethod(id));
 						} else {
-							signalError.showError("No instance variable for class: " + identClass.getName());
+							// signalError.showError("No instance variable for class: " + identClass.getName());
 						}
 					}
 				}

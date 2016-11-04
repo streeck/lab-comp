@@ -38,11 +38,8 @@ public class IfStatement extends Statement {
         }
 
         if (stmtElse != null){
-            pw.printlnIdent("else ");
-            pw.println("");
-            pw.add();
+            pw.printIdent("else ");
             stmtElse.genKra(pw);
-            pw.sub();
         }
     }
 

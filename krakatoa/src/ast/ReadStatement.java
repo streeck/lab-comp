@@ -18,7 +18,7 @@ public class ReadStatement extends Statement{
 
     @Override
     public void genKra(PW pw) {
-        pw.print("read(");
+        pw.printIdent("read(");
         int i = varList.getSize();
         int count = 0;
         Iterator<Variable> vars = varList.elements();

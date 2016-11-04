@@ -617,7 +617,8 @@ public class Compiler {
 			}
 			return false;
 		}
-	} else if (isType(left.getName()) && right== Type.undefinedType) {
+	}
+  if (isType(left.getName()) && right== Type.undefinedType) {
 		return true;
 	}
 	return false;
@@ -686,6 +687,10 @@ public class Compiler {
 
 		if (currentMethod.getType() == Type.voidType) {
 			signalError.showError("Illegal 'return' statement. Method returns 'void'");
+		}
+
+		if (!is_type_convertable(currentMethod.getType(), e.getType())) {
+			signalError.showError("Type error: type of the expression returned is not subclass of the method return type");
 		}
 		lexer.nextToken();
 

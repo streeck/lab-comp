@@ -272,6 +272,8 @@ public class Compiler {
 		 */
 		if (variableList.exist(name)) {
 			signalError.showError("Method '" + name + "' has name equal to an instance variable");
+		} else if (currentClass.existMethod(name)) {
+			signalError.showError("Method '" + name + "' is being redeclared");
 		}
         currentMethod = new Method(type, name, qualifier);
         if(currentClass.getName().equals("Program"))

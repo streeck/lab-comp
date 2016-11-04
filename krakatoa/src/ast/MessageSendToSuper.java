@@ -23,6 +23,19 @@ public class MessageSendToSuper extends MessageSend {
         
     }
 
+    @Override
+    public void genKra(PW pw, boolean putParenthesis) {
+        if (putParenthesis) {
+            pw.print("(");
+        }
+        pw.print("super." + methodMessage.getName() + "(");
+        exprList.genKra(pw);
+        pw.print(")");
+        if (putParenthesis) {
+            pw.print(")");
+        }
+    }
+
     public KraClass getClassSender() {
         return classSender;
     }

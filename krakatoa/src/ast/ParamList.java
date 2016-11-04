@@ -31,4 +31,18 @@ public class ParamList {
     public void setParamList(ArrayList<Variable> paramList) {
         this.paramList = paramList;
     }
+
+    public void genKra(PW pw) {
+        int size = paramList.size();
+        for (Variable var : paramList) {
+            pw.print(var.getType().getName());
+            pw.print(" ");
+            var.genKra(pw);
+
+            size = size - 1;
+            if (size > 0) {
+                pw.print(", ");
+            }
+        }
+    }
 }

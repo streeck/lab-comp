@@ -30,8 +30,8 @@ public class KraClass extends Type {
         pw.println(" {");
         pw.add();
         if (instanceVariableList != null) {instanceVariableList.genKra(pw);}
-        if (publicMethodList != null) {publicMethodList.genKra(pw, true);}
-        if (privateMethodList != null) {privateMethodList.genKra(pw, false);}
+        if (publicMethodList != null) {publicMethodList.genKra(pw);}
+        if (privateMethodList != null) {privateMethodList.genKra(pw);}
         pw.sub();
         pw.println("}");
     }

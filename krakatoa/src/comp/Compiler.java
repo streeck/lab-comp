@@ -635,6 +635,9 @@ public class Compiler {
 	}
 
 	private WhileStatement whileStatement() {
+
+		WhileStack.push(1);
+
         Expr e;
         Statement stmt;
 		lexer.nextToken();
@@ -767,6 +770,10 @@ public class Compiler {
 	private BreakStatement breakStatement() {
         BreakStatement breakstmt = new BreakStatement();
 		lexer.nextToken();
+
+		if (WhileStack.empty()) {
+			signalError.showError("'break' statement found outside a 'while' statement");
+		}
 		if ( lexer.token != Symbol.SEMICOLON )
 			signalError.show(ErrorSignaller.semicolon_expected);
 		lexer.nextToken();
@@ -1182,4 +1189,5 @@ public class Compiler {
 	private ErrorSignaller	signalError;
 	private KraClass 		currentClass;
 	private Method          currentMethod;
+	private Stack 			WhileStack = new Stack();
 }

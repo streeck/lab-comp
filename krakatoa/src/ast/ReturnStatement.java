@@ -15,6 +15,13 @@ public class ReturnStatement extends Statement {
 
     }
 
+    @Override
+    public void genKra(PW pw) {
+        pw.print("return (");
+        expr.genKra(pw, false);
+        pw.println(");");
+    }
+
     public Expr getExpr() {
         return expr;
     }

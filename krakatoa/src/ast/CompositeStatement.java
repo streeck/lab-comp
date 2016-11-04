@@ -11,6 +11,15 @@ public class CompositeStatement extends  Statement {
     public void genC( PW pw ) {
     }
 
+    @Override
+    public void genKra(PW pw) {
+        pw.println("{");
+        pw.add();
+        statementList.genKra(pw);
+        pw.sub();
+        pw.printlnIdent("}");
+    }
+
     public StatementList getStatementList() {
         return statementList;
     }

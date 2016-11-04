@@ -8,4 +8,12 @@ public class InstanceVariable extends Variable {
         super(name, type);
     }
 
+    public void genKra(PW pw) {
+//        pw.printIdent("");
+        pw.print("private ");
+        pw.print(this.getType().getName());
+        pw.print(" ");
+        pw.print(this.getName());
+        pw.println(";");
+    }
 }

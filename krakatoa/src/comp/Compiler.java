@@ -194,7 +194,7 @@ public class Compiler {
 			String name = lexer.getStringValue();
 			lexer.nextToken();
 			if ( lexer.token == Symbol.LEFTPAR ){
-				method  = methodDec(t, name, qualifier);
+				method  = methodDec(t, name, qualifier, variableList);
                 //Verifica se o methodo ja existe na lista
                 //Se nao existir, add. Se existir mostra erro
                 if(!kraClass.existMethod(method)) {
@@ -204,7 +204,7 @@ public class Compiler {
                             if (publicQualifier) kraClass.addPublicMethod(method);
                             else kraClass.addPrivateMethod(method);
                         }
-                    }else{
+                    } else {
                         if (publicQualifier) kraClass.addPublicMethod(method);
                         else kraClass.addPrivateMethod(method);
                     }
@@ -265,11 +265,14 @@ public class Compiler {
 		lexer.nextToken();
 	}
 
-	private Method methodDec(Type type, String name, Symbol qualifier) {
+	private Method methodDec(Type type, String name, Symbol qualifier, InstanceVariableList variableList) {
 		/*
 		 * MethodDec ::= Qualifier Return Id "("[ FormalParamDec ] ")" "{"
 		 *                StatementList "}"
 		 */
+		if (variableList.exist(name)) {
+			signalError.showError("Method '" + name + "' has name equal to an instance variable");
+		}
         currentMethod = new Method(type, name, qualifier);
         if(currentClass.getName().equals("Program"))
             if(currentMethod.getName().equals("run"))
@@ -297,7 +300,7 @@ public class Compiler {
 		lexer.nextToken();
 		currentMethod.setStmtList(statementList());
         //Verifica se o metodo, caso seja void, tenha um return.
-        if(currentMethod.getType() != Type.voidType){
+        if(currentMethod.getType() != Type.voidType) {
             if(!currentMethod.hasReturn())
                 signalError.showError("Missing 'return' statement in method '"+currentMethod.getName()+"'");
         }

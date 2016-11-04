@@ -44,4 +44,8 @@ public class ExprList {
     public void setExprList(ArrayList<Expr> exprList) {
         this.exprList = exprList;
     }
+    public Iterator<Expr> elements() {
+        return getExprList().iterator();
+    }
+
 }

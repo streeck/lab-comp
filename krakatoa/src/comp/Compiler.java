@@ -301,6 +301,9 @@ public class Compiler {
             }
 
 			currentMethod.setParamList(p);
+		} else {
+			ParamList p = new ParamList();
+			currentMethod.setParamList(p);
 		}
 
 		if (currentClass.getSuperclass() != null) {
@@ -397,7 +400,7 @@ public class Compiler {
 				signalError.showError("Classe '"+lexer.getStringValue()+"' nao declarada. (Type)");
 			// IDENT deve ser uma classe.
 			//result = null;
-			result = Type.undefinedType;
+			result = classe;
 			break;
 		default:
 			signalError.showError("Type expected");

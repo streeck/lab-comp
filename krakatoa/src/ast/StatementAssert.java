@@ -10,6 +10,10 @@ public class StatementAssert extends Statement {
 	}
 	@Override
 	public void genC(PW pw) {
+	}
+
+	@Override
+	public void genKra(PW pw) {
 		pw.printIdent("if ( !( ");
 		expr.genC(pw, false);
 		pw.println(" ) ) {");
@@ -17,12 +21,6 @@ public class StatementAssert extends Statement {
 		pw.printlnIdent("puts(\"" + message +  "\");");
 		pw.sub();
 		pw.printlnIdent("}");
-
-	}
-
-	@Override
-	public void genKra(PW pw) {
-
 	}
 
 	public Expr getExpr() {

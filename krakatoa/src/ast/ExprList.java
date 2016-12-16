@@ -20,7 +20,8 @@ public class ExprList {
         int size = getExprList().size();
         for ( Expr e : getExprList()) {
         	e.genC(pw, false);
-            if ( --size > 0 )
+            size = size - 1;
+            if (size > 0)
                 pw.print(", ");
         }
     }

@@ -88,9 +88,11 @@ public class Method extends Variable{
         pw.print(getType().getCname());
         pw.print(" _" + className + "_" + getName() + "(_class_" + className + " *this");
         if (paramList != null) {
-//            paramList.genC(pw);
+            if (paramList.getSize() > 0)
+                pw.print(", ");
+            paramList.genC(pw);
         }
-        pw.println(") {");
+        pw.println(" ) {");
         pw.add();
 
         if (stmtList != null) {

@@ -34,7 +34,8 @@ public class MessageSendToVariable extends MessageSend {
             ArrayList<Expr> localExprList = exprList.getExprList();
             for (Expr expr : localExprList) {
                 pw.print(expr.getType().getCname());
-                if (--size > 0) {
+                size = size - 1;
+                if (size > 0) {
                     pw.print(", ");
                 }
             }

@@ -51,7 +51,8 @@ public class KraClass extends Type {
 
         for (String name : publicMethodNames) {
             pw.printIdent("(void (*) ()) _" + getName() + "_" + name);
-            if (--size > 0) {
+            size = size - 1;
+            if (size > 0) {
                 pw.println(",");
             }
             else {

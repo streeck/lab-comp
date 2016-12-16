@@ -19,10 +19,13 @@ public class ReadStatement extends Statement{
         Iterator<Variable> vars = varList.elements();
         while (vars.hasNext()) {
             Variable var = vars.next();
-            if(var.getType() == Type.intType) {
-                pw.printIdent("char __s[512];"); //Talvez de errado -- Redeclaracao
-                pw.printIdent("gets(__s);");
+            if (var.getType() == Type.intType) {
+                pw.printlnIdent("{");
+                pw.add();
+                pw.printlnIdent("char __s[512];"); //Talvez de errado -- Redeclaracao
+                pw.printlnIdent("gets(__s);");
                 pw.printIdent("sscanf(__s, \"%d\", ");
+                pw.sub();
 
                 //Se for variável de instancia:
                 if (var instanceof InstanceVariable) {
@@ -32,7 +35,8 @@ public class ReadStatement extends Statement{
                     pw.print("&_" + var.getName());
                 }
                 pw.println(");");
-            }else if(var.getType()== Type.stringType){
+                pw.printlnIdent("}");
+            } else if (var.getType()== Type.stringType) {
                 pw.println("char __s[512];"); //Talvez de errado -- Redeclaracao
                 pw.println("gets(__s);");
                 //Vc le a variavel, faz um malloc para ela e copia o valor em s

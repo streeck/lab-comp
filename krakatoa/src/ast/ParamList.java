@@ -45,4 +45,18 @@ public class ParamList {
             }
         }
     }
+
+    public void genC(PW pw) {
+        int size = paramList.size();
+        for (Variable param : paramList) {
+            pw.print(param.getType().getName());
+            pw.print(" ");
+            param.genC(pw);
+
+            size = size - 1;
+            if (size > 0) {
+                pw.print(", ");
+            }
+        }
+    }
 }

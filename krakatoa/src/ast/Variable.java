@@ -19,6 +19,10 @@ public class Variable {
         pw.print(name);
     }
 
+    public void genC(PW pw) {
+        pw.print("_" + name);
+    }
+
     private String name;
     private Type type;
 }

@@ -747,6 +747,8 @@ public class Compiler {
 			else {
 				if(v.getType() == Type.booleanType) {
 					signalError.showError("Command 'read' does not accept 'boolean' variables");
+				} else {
+					varList.addElement(v);
 				}
 			}
 
@@ -1119,6 +1121,16 @@ public class Compiler {
 				// }
 
 				Variable var = symbolTable.getInLocal(firstId);
+				if (var == null) {
+					Iterator<Variable> currentParams = currentMethod.getParamList().elements();
+
+					while (currentParams.hasNext()) {
+						Variable param = currentParams.next();
+						if (firstId.equals(param.getName())) {
+							var = param;
+						}
+					}
+				}
 
 				// if (var == null && currentClass.existInstanceVariable(firstId)) {
 				// 	signalError.showError("Instance variable called incorrectly " + firstId);

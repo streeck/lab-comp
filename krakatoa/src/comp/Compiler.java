@@ -1211,6 +1211,7 @@ public class Compiler {
 						 * para fazer as confer�ncias sem�nticas, procure por
 						 * m�todo 'ident' na classe de 'firstId'
 						 */
+						return new MessageSendToVariable(symbolTable.getInLocal(firstId), method, exprList);
 					}
 					else {
 						// retorne o objeto da ASA que representa Id "." Id

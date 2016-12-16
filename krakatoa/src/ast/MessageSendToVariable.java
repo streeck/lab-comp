@@ -41,9 +41,9 @@ public class MessageSendToVariable extends MessageSend {
             }
 
             KraClass localClass = (KraClass) var.getType();
-        int i = localClass.fetchPosition(method.getName());
+            int i = localClass.fetchPosition(method.getName());
             pw.print(")) _" + var.getName());
-        pw.print("->vt[" + i + "]) (_" + var.getName());
+            pw.print("->vt[" + i + "]) (_" + var.getName());
 
             if (exprList.getSize() > 0) {
                 pw.print(", ");

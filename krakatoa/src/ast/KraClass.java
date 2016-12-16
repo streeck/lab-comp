@@ -5,24 +5,37 @@ package ast;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Stack;
 
 /*
  * Krakatoa Class
  */
 public class KraClass extends Type {
 
-   private String name;
-   private KraClass superclass;
-   private InstanceVariableList instanceVariableList;
-   private MethodList publicMethodList;
-   private MethodList privateMethodList;
+    private String name;
+    private KraClass superclass;
+    private InstanceVariableList instanceVariableList;
+    private MethodList publicMethodList;
+    private MethodList privateMethodList;
 
-   public KraClass( String name ) {
-      super(name);
-      publicMethodList = new MethodList();
-      privateMethodList = new MethodList();
-      instanceVariableList = new InstanceVariableList();
-   }
+    public KraClass( String name ) {
+        super(name);
+        publicMethodList = new MethodList();
+        privateMethodList = new MethodList();
+        instanceVariableList = new InstanceVariableList();
+    }
+
+    public Stack getClassStack() {
+        Stack<KraClass> stack = new Stack();
+
+        KraClass aux;
+        aux = this.getSuperclass();
+        do {
+            stack.push(aux);
+            aux = aux.getSuperclass();
+        } while(aux != null);
+        return stack;
+    }
 
     public void genC(PW pw) {
         pw.println("typedef");
@@ -30,6 +43,15 @@ public class KraClass extends Type {
         pw.printlnIdent("struct _St_" + getName() + " {");
         pw.add();
         pw.printlnIdent("Func *vt;");
+
+        if (getSuperclass() != null) {
+            Stack<KraClass> stack = getClassStack();
+            while (!stack.empty()) {
+                KraClass aux = stack.pop();
+                aux.getInstanceVariableList().genC(pw, aux.getName());
+            }
+        }
+
         instanceVariableList.genC(pw, getName());
         pw.sub();
         pw.printIdent("}");
@@ -39,6 +61,14 @@ public class KraClass extends Type {
 
         pw.println("_class_" + getCname() + " *new_" + getName() + "(void);");
         pw.println("");
+
+        if (getSuperclass() != null) {
+            Stack<KraClass> stack = getClassStack();
+            while (!stack.empty()) {
+                KraClass aux = stack.pop();
+                aux.getPublicMethodList().genC(pw, this.getName());
+            }
+        }
 
         privateMethodList.genC(pw, getName());
         publicMethodList.genC(pw, getName());
@@ -92,113 +122,113 @@ public class KraClass extends Type {
         pw.println("}");
     }
 
-   public String getCname() {
-      return getName();
-   }
+    public String getCname() {
+        return getName();
+    }
 
-   public void setName(String name) {
-      this.name = name;
-   }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-   public KraClass getSuperclass() {
-      return superclass;
-   }
+    public KraClass getSuperclass() {
+        return superclass;
+    }
 
-   public void setSuperclass(KraClass superclass) {
-      this.superclass = superclass;
-   }
+    public void setSuperclass(KraClass superclass) {
+        this.superclass = superclass;
+    }
 
-   public InstanceVariableList getInstanceVariableList() {
-      return instanceVariableList;
-   }
+    public InstanceVariableList getInstanceVariableList() {
+        return instanceVariableList;
+    }
 
-   public void setInstanceVariableList(InstanceVariableList instanceVariableList) {
-      this.instanceVariableList = instanceVariableList;
-   }
+    public void setInstanceVariableList(InstanceVariableList instanceVariableList) {
+        this.instanceVariableList = instanceVariableList;
+    }
 
-   public void addPublicMethod(Method m){
-      publicMethodList.addElement(m);
-   }
+    public void addPublicMethod(Method m){
+        publicMethodList.addElement(m);
+    }
 
-   public void addPrivateMethod(Method m){
-      privateMethodList.addElement(m);
-   }
-   public MethodList getPublicMethodList() {
-      return publicMethodList;
-   }
+    public void addPrivateMethod(Method m){
+        privateMethodList.addElement(m);
+    }
+    public MethodList getPublicMethodList() {
+        return publicMethodList;
+    }
 
-   public void setPublicMethodList(MethodList publicMethodList) {
-      this.publicMethodList = publicMethodList;
-   }
+    public void setPublicMethodList(MethodList publicMethodList) {
+        this.publicMethodList = publicMethodList;
+    }
 
-   public MethodList getPrivateMethodLis() {
-      return privateMethodList;
-   }
+    public MethodList getPrivateMethodLis() {
+        return privateMethodList;
+    }
 
-   public void setPrivateMethodLis(MethodList privateMethodList) {
-      this.privateMethodList = privateMethodList;
-   }
+    public void setPrivateMethodLis(MethodList privateMethodList) {
+        this.privateMethodList = privateMethodList;
+    }
 
-   //Retorna True se o metodo já existir, ou na lista de publico, ou na lista de privados.
-   public boolean existMethod(Method method) {
-       if( publicMethodList.exist(method) || privateMethodList.exist(method) )
-           return true;
-       return false;
-   }
-   public boolean existMethod(String method) {
-      if( publicMethodList.exist(method) || privateMethodList.exist(method) )
-         return true;
-      return false;
-   }
-   public boolean existPublicMethod(String method) {
-      if (publicMethodList.exist(method))
-         return true;
-      return false;
-   }
-   public boolean existPrivateMethod(String method) {
-      if (privateMethodList.exist(method))
-         return true;
-      return false;
-   }
-   public boolean existInstanceVariable(InstanceVariable v){
-       return instanceVariableList.exist(v);
-   }
-   public boolean existInstanceVariable(String v){
-       return instanceVariableList.exist(v);
-   }
+    //Retorna True se o metodo já existir, ou na lista de publico, ou na lista de privados.
+    public boolean existMethod(Method method) {
+        if( publicMethodList.exist(method) || privateMethodList.exist(method) )
+            return true;
+        return false;
+    }
+    public boolean existMethod(String method) {
+        if( publicMethodList.exist(method) || privateMethodList.exist(method) )
+            return true;
+        return false;
+    }
+    public boolean existPublicMethod(String method) {
+        if (publicMethodList.exist(method))
+            return true;
+        return false;
+    }
+    public boolean existPrivateMethod(String method) {
+        if (privateMethodList.exist(method))
+            return true;
+        return false;
+    }
+    public boolean existInstanceVariable(InstanceVariable v){
+        return instanceVariableList.exist(v);
+    }
+    public boolean existInstanceVariable(String v){
+        return instanceVariableList.exist(v);
+    }
 
-   public Method fetchMethod(String ident) {
-     if (this.publicMethodList.exist(ident)) {
-       return this.publicMethodList.getVariable(ident);
-     } else {
-       return this.privateMethodList.getVariable(ident);
-     }
-   }
-   public Method fetchPublicMethod(String ident) {
-     return this.publicMethodList.getVariable(ident);
-   }
-   public Method fetchPrivateMethod(String ident) {
-     return this.privateMethodList.getVariable(ident);
-   }
+    public Method fetchMethod(String ident) {
+        if (this.publicMethodList.exist(ident)) {
+            return this.publicMethodList.getVariable(ident);
+        } else {
+            return this.privateMethodList.getVariable(ident);
+        }
+    }
+    public Method fetchPublicMethod(String ident) {
+        return this.publicMethodList.getVariable(ident);
+    }
+    public Method fetchPrivateMethod(String ident) {
+        return this.privateMethodList.getVariable(ident);
+    }
 
 
     //Procura um metodo na superClasses para receber uma mensagem. Se existir um método com o mesmo nome
-   //Verifica se os parametros são iguais (tipos iguais na mesma ordem)
+    //Verifica se os parametros são iguais (tipos iguais na mesma ordem)
     //Retorna o Method
     public Method findMessage(String messageName) {
         KraClass aux;
         Method m = null;
         ArrayList<Method> listMethod = new ArrayList<Method>();
         aux = this.getSuperclass();
-       do {
-           if (aux.existPublicMethod(messageName)) {
-               m = aux.fetchPublicMethod(messageName);
-              return m;
-           }else{
-               aux = aux.getSuperclass();
-           }
-       }while(aux != null);
-       return null;
+        do {
+            if (aux.existPublicMethod(messageName)) {
+                m = aux.fetchPublicMethod(messageName);
+                return m;
+            }else{
+                aux = aux.getSuperclass();
+            }
+        }while(aux != null);
+        return null;
     }
 
     public int fetchPosition(String name) {

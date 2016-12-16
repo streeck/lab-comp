@@ -63,4 +63,14 @@ public class StatementList {
             }
         }
     }
+
+    public void genC(PW pw, String className) {
+        if (!stmtList.isEmpty()) {
+            for (Statement stmt : stmtList) {
+                if (stmt != null) {
+                    stmt.genC(pw, className);
+                }
+            }
+        }
+    }
 }

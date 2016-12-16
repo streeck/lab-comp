@@ -2,7 +2,9 @@
 //Charles David de Moraes 489662
 package ast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /*
  * Krakatoa Class
@@ -21,6 +23,59 @@ public class KraClass extends Type {
       privateMethodList = new MethodList();
       instanceVariableList = new InstanceVariableList();
    }
+
+    public void genC(PW pw) {
+        pw.println("typedef");
+        pw.add();
+        pw.printlnIdent("struct _St_" + getName() + " {");
+        pw.add();
+        pw.printlnIdent("Func *vt;");
+        instanceVariableList.genC(pw, getName());
+        pw.sub();
+        pw.printIdent("}");
+        pw.println(" _class_" + getCname() + ";");
+        pw.sub();
+        pw.println("");
+
+        pw.println("_class_" + getCname() + " *new_" + getName() + "(void);");
+        pw.println("");
+
+        privateMethodList.genC(pw, getName());
+        publicMethodList.genC(pw, getName());
+
+        pw.println("Func VTclass_" + getName() + "[] = {");
+        pw.add();
+
+        ArrayList<String> publicMethodNames = publicMethodList.getNames();
+        int size = publicMethodNames.size();
+
+        for (String name : publicMethodNames) {
+            pw.printIdent("(void (*) ()) _" + getName() + "_" + name);
+            if (--size > 0) {
+                pw.println(",");
+            }
+            else {
+                pw.println("");
+            }
+        }
+
+        pw.sub();
+        pw.println("};");
+        pw.println("");
+
+        pw.println("_class_" + getCname() +" *new_" + getName() + "() {");
+        pw.add();
+        pw.printlnIdent("_class_" + getCname() + " *t;");
+        pw.printlnIdent("if ((t = malloc(sizeof(_class_" + getCname() + "))) != NULL) {");
+        pw.add();
+        pw.printlnIdent("t->vt = VTclass_" + getName() + ";");
+        pw.sub();
+        pw.printlnIdent("}");
+        pw.printlnIdent("return t;");
+        pw.sub();
+        pw.print("}");
+        pw.println("");
+    }
 
     public void genKra(PW pw) {
         pw.print("class " + this.getName());
@@ -143,6 +198,10 @@ public class KraClass extends Type {
            }
        }while(aux != null);
        return null;
+    }
+
+    public int fetchPosition(String name) {
+        return this.publicMethodList.fetchPosition(name);
     }
 
 

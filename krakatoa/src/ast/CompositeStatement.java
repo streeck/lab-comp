@@ -6,7 +6,9 @@ package ast;
 public class CompositeStatement extends  Statement {
     private StatementList statementList;
 
-    public void genC( PW pw ) {
+    @Override
+    public void genC( PW pw, String className) {
+        statementList.genC(pw, className);
     }
 
     @Override

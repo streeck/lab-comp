@@ -83,4 +83,20 @@ public class Method extends Variable{
         pw.sub();
         pw.printlnIdent("}");
     }
+
+    public void genC(PW pw, String className) {
+        pw.print(getType().getCname());
+        pw.print(" _" + className + "_" + getName() + "(_class_" + className + " *this");
+        if (paramList != null) {
+//            paramList.genC(pw);
+        }
+        pw.println(") {");
+        pw.add();
+
+        if (stmtList != null) {
+            stmtList.genC(pw, className);
+        }
+        pw.sub();
+        pw.printlnIdent("}");
+    }
 }

@@ -9,7 +9,7 @@ public class StatementAssert extends Statement {
 		this.message = message;
 	}
 	@Override
-	public void genC(PW pw) {
+	public void genC(PW pw, String className) {
         pw.printIdent("if ( !( ");
 		expr.genC(pw, false);
 		pw.println(" ) ) {");

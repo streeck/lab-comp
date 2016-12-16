@@ -25,6 +25,18 @@ public class MethodList {
         return methodList.size();
     }
 
+    public ArrayList<String> getNames() {
+        ArrayList<String> methodNames = new ArrayList<String>();
+
+        for (Method method : methodList) {
+            if (method != null) {
+                methodNames.add(method.getName());
+            }
+        }
+
+        return methodNames;
+    }
+
     //Retorna true se o metodo já existir no vetor.
     //Caso contrário retorna falso.
     public boolean exist(Method method) {
@@ -59,5 +71,23 @@ public class MethodList {
                 method.genKra(pw);
             }
         }
+    }
+
+    public void genC(PW pw, String className) {
+        for (Method method : methodList) {
+            if (method != null) {
+                method.genC(pw, className);
+            }
+        }
+    }
+
+    public int fetchPosition(String name) {
+        int i= 0;
+        for (Method method : methodList)
+            if (method.getName().equals(name))
+                return i;
+            else
+                i++;
+        return -1;
     }
 }

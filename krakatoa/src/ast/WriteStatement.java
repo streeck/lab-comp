@@ -2,9 +2,9 @@
 //Charles David de Moraes 489662
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
+import java.util.ArrayList;
+import java.util.Iterator;
+
 public class WriteStatement extends Statement{
     private ExprList exprList;
 
@@ -12,8 +12,20 @@ public class WriteStatement extends Statement{
         this.setExprList(e);
     }
     @Override
-    public void genC(PW pw) {
+    public void genC(PW pw, String className) {
+        ArrayList<Expr> exprs = exprList.getExprList();
 
+        for (Expr e : exprs) {
+            if(e.getType() == Type.stringType) {
+                pw.printIdent("puts(\"");
+                e.genC(pw, false);
+                pw.println("\");");
+            } else if (e.getType() == Type.intType) {
+                pw.printIdent("printf(\"%d\", ");
+                e.genC(pw, false);
+                pw.println(");");
+            }
+        }
     }
 
     @Override

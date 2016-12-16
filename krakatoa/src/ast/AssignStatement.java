@@ -17,8 +17,16 @@ public class AssignStatement extends Statement{
 
 
     @Override
-    public void genC(PW pw) {
-
+    public void genC(PW pw, String className) {
+        if (leftPart != null) {
+            pw.printIdent("");
+            leftPart.genC(pw, false);
+            if (rightPart != null) {
+                pw.print(" = ");
+                rightPart.genC(pw, false);
+                pw.println(";");
+            }
+        }
     }
 
     @Override
@@ -29,8 +37,8 @@ public class AssignStatement extends Statement{
             if (rightPart != null) {
                 pw.print(" = ");
                 rightPart.genKra(pw, false);
+                pw.println(";");
             }
-            pw.println(";");
         }
     }
 

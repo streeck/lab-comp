@@ -4,7 +4,7 @@ package ast;
 
 public class MessageSendStatement extends Statement {
 
-    public void genC( PW pw ) {
+    public void genC( PW pw, String className) {
         pw.printIdent("");
         // messageSend.genC(pw);
         pw.println(";");

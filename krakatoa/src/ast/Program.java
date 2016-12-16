@@ -23,6 +23,37 @@ public class Program {
 	}
 
 	public void genC(PW pw) {
+		pw.println("#include <stdlib.h>");
+//		pw.println("#include <malloc.h>");
+		pw.println("#include <stdio.h>");
+
+		pw.println("");
+		pw.println("typedef int boolean;");
+		pw.println("#define true 1");
+		pw.println("#define false 0");
+
+		pw.println("");
+		pw.println("typedef");
+		pw.add();
+		pw.printlnIdent("void (*Func)();");
+		pw.sub();
+
+		pw.println("");
+		for (KraClass kraClass : classList) {
+			kraClass.genC(pw);
+			pw.printlnIdent("");
+		}
+
+		pw.add();
+		pw.println("int main() {");
+		pw.printlnIdent("_class_Program *program;");
+
+		pw.println("");
+		pw.printlnIdent("program = new_Program();");
+		pw.printlnIdent("( ( void (*)(_class_Program *) ) program->vt[0] )(program);");
+		pw.printlnIdent("return 0;");
+		pw.sub();
+		pw.println("}");
 	}
 	
 	public ArrayList<KraClass> getClassList() {

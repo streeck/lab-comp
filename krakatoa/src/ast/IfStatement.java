@@ -15,8 +15,42 @@ public class IfStatement extends Statement {
     }
 
     @Override
-    public void genC(PW pw) {
+    public void genC(PW pw, String className) {
+        pw.printIdent("if ( ");
 
+        if (expr.getType() == Type.booleanType) {
+            expr.genC(pw, false);
+//            pw.print(" != false");
+        }
+        else {
+            expr.genC(pw, false);
+        }
+        pw.println(" ) {");
+
+        if (stmtIf instanceof CompositeStatement) {
+            pw.print("");
+            stmtIf.genC(pw, className);
+        } else {
+            pw.println("");
+            if (stmtIf != null) {
+                pw.add();
+                stmtIf.genC(pw, className);
+                pw.sub();
+            }
+        }
+
+//        pw.add();
+//        stmtIf.genC(pw, className);
+//        pw.sub();
+
+        if (stmtElse != null) {
+            pw.printlnIdent("} else {");
+
+            pw.add();
+            stmtElse.genC(pw, className);
+            pw.sub();
+        }
+        pw.printlnIdent("}");
     }
 
     @Override

@@ -9,7 +9,7 @@ public class StatementAssert extends Statement {
 		this.message = message;
 	}
 	@Override
-	public void genC(PW pw) {
+	public void genC(PW pw, String className) {
 		pw.printIdent("if ( !( ");
 		expr.genC(pw, false);
 		pw.println(" ) ) {");
@@ -17,12 +17,17 @@ public class StatementAssert extends Statement {
 		pw.printlnIdent("puts(\"" + message +  "\");");
 		pw.sub();
 		pw.printlnIdent("}");
-
 	}
 
 	@Override
 	public void genKra(PW pw) {
-
+		pw.printIdent("if ( !( ");
+		expr.genKra(pw, false);
+		pw.println(" ) ) {");
+		pw.add();
+		pw.printlnIdent("write(\"" + message +  "\");");
+		pw.sub();
+		pw.printlnIdent("}");
 	}
 
 	public Expr getExpr() {

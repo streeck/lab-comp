@@ -12,8 +12,10 @@ public class WritelnStatement extends Statement{
     }
 
     @Override
-    public void genC(PW pw) {
-
+    public void genC(PW pw, String className) {
+        pw.printIdent("puts(");
+        exprList.genC(pw, className);
+        pw.println(");");
     }
 
     @Override

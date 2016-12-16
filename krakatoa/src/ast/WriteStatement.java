@@ -2,9 +2,6 @@
 //Charles David de Moraes 489662
 package ast;
 
-/**
- * Created by Angela on 28/10/2016.
- */
 public class WriteStatement extends Statement{
     private ExprList exprList;
 
@@ -12,8 +9,10 @@ public class WriteStatement extends Statement{
         this.setExprList(e);
     }
     @Override
-    public void genC(PW pw) {
-
+    public void genC(PW pw, String className) {
+        pw.printIdent("puts(");
+        exprList.genC(pw, className);
+        pw.println(");");
     }
 
     @Override

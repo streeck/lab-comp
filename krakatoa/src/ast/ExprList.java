@@ -15,7 +15,7 @@ public class ExprList {
         getExprList().add(expr);
     }
 
-    public void genC( PW pw ) {
+    public void genC( PW pw, String className) {
 
         int size = getExprList().size();
         for ( Expr e : getExprList()) {

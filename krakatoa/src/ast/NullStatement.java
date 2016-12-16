@@ -6,8 +6,8 @@ package ast;
 //Será util para gerar um ";" no codigo...
 public class NullStatement extends Statement {
     @Override
-    public void genC(PW pw) {
-
+    public void genC(PW pw, String className) {
+        pw.printlnIdent(";");
     }
 
     public void genKra(PW pw) {

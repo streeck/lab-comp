@@ -18,6 +18,10 @@ public class AssignStatement extends Statement{
 
     @Override
     public void genC(PW pw, String className) {
+        if (varList != null) {
+            varList.genC(pw);
+        }
+
         if (leftPart != null) {
             pw.printIdent("");
             leftPart.genC(pw, false);

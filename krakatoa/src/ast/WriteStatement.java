@@ -19,9 +19,9 @@ public class WriteStatement extends Statement{
             if(e.getType() == Type.stringType) {
                 pw.printIdent("puts(\"");
                 e.genC(pw, false);
-                pw.println("\");");
+                pw.println(" \");");
             } else if (e.getType() == Type.intType) {
-                pw.printIdent("printf(\"%d\", ");
+                pw.printIdent("printf(\"%d \", ");
                 e.genC(pw, false);
                 pw.println(");");
             }

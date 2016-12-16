@@ -12,7 +12,12 @@ public class ObjectConstructor extends Expr{
 
     @Override
     public void genC(PW pw, boolean putParenthesis) {
-
+        if (castingObj != null && object != null) {
+            if (castingObj.getName() != object.getName()) {
+                pw.print("(" + castingObj.getName() + " ) ");
+            }
+        }
+        pw.print("new_" + object.getName() + "()");
     }
 
     @Override

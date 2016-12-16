@@ -50,6 +50,12 @@ public class MessageSendToVariable extends MessageSend {
 
             exprList.genC(pw);
             pw.print(")");
+        } else {
+            KraClass localClass = (KraClass) var.getType();
+            int i = localClass.fetchPosition(method.getName());
+            pw.print(")) _" + var.getName());
+            pw.print("->vt[" + i + "]) (_" + var.getName());
+            pw.print(")");
         }
     }
 

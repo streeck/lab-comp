@@ -56,7 +56,7 @@ public class LocalVariableList {
             for (Variable var : localList) {
                 if (var != null) {
                     if (var.getType() instanceof KraClass) {
-                        pw.printIdent(var.getType().getCname());
+                        pw.printIdent("_class_" + var.getType().getCname());
                         pw.println(" *_" + var.getName() + ";");
                     }
                     else {

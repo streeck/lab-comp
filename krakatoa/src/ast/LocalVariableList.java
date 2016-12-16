@@ -50,4 +50,21 @@ public class LocalVariableList {
             }
         }
     }
+
+    public void genC(PW pw) {
+        if (!localList.isEmpty()) {
+            for (Variable var : localList) {
+                if (var != null) {
+                    if (var.getType() instanceof KraClass) {
+                        pw.printIdent(var.getType().getCname());
+                        pw.println(" *_" + var.getName() + ";");
+                    }
+                    else {
+                        pw.printIdent(var.getType().getCname());
+                        pw.println(" _" + var.getName() + ";");
+                    }
+                }
+            }
+        }
+    }
 }

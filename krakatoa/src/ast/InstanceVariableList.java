@@ -57,4 +57,9 @@ public class InstanceVariableList {
             pw.println("");
         }
     }
+
+    public void genC(PW pw, String kraClass) {
+        for (InstanceVariable instanceVariable : instanceVariableList)
+            instanceVariable.genC(pw, kraClass);
+    }
 }

@@ -14,14 +14,13 @@ public class WriteStatement extends Statement{
     @Override
     public void genC(PW pw, String className) {
         ArrayList<Expr> exprs = exprList.getExprList();
-
-        for (Expr e : exprs) {
+       for (Expr e : exprs) {
             if(e.getType() == Type.stringType) {
                 pw.printIdent("puts(\"");
                 e.genC(pw, false);
                 pw.println(" \");");
             } else if (e.getType() == Type.intType) {
-                pw.printIdent("printf(\"%d \", ");
+                pw.printIdent("printf(\" %d\", ");
                 e.genC(pw, false);
                 pw.println(");");
             }

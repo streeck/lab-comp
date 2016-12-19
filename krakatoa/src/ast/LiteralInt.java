@@ -13,7 +13,7 @@ public class LiteralInt extends Expr {
         return value;
     }
     public void genC( PW pw, boolean putParenthesis ) {
-        pw.printIdent("" + value);
+        pw.print(String.valueOf(value));
     }
 
     @Override
